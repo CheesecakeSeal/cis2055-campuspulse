@@ -1,0 +1,65 @@
+@model IEnumerable<CampusPulse.Models.Report>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container mt-4">
+    <header class="pulse-hero">
+        <h1 class="display-4 fw-bold">CampusPulse</h1>
+        <p class="lead">Empowering the University of Malta community to report and resolve issues.</p>
+        <a asp-controller="Reports" asp-action="Create" class="btn btn-primary btn-lg px-4">Report an Issue</a>
+    </header>
+
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="mb-4">Trending Issues</h2>
+            
+            @foreach (var item in Model.OrderByDescending(r => r.Upvotes).Take(5))
+            {
+
+                string statusClass = item.Status switch
+                {
+                    "Open" => "status-open",
+                    "Being Investigated" => "status-investigating",
+                    "Resolved" => "status-resolved",
+                    "No Action Required" => "status-no-action",
+                    _ => ""
+                };
+
+                <article class="card pulse-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title h4">@item.Title</h5>
+                            <span class="status-badge @statusClass">@item.Status</span>
+                        </div>
+                        
+                        <p class="text-secondary mb-3">
+                            <strong>@item.Location</strong> | @item.Category
+                        </p>
+                        
+                        <p class="card-text">@item.Description</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-muted">Reported: @item.DateReported.ToString("dd MMM yyyy")</small>
+                            <div class="d-flex align-items-center">
+                                <span class="upvote-count me-3">@item.Upvotes Upvotes</span>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light border-0 p-3 mb-4">
+                <h4 class="h5">Quick Navigation</h4>
+                <div class="list-group list-group-flush">
+                    <a asp-action="HallOfFame" class="list-group-item list-group-item-action bg-transparent border-0">Hall of Fame</a>
+                    <a href="#" class="list-group-item list-group-item-action bg-transparent border-0">Trending Locations</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
