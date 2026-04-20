@@ -1,0 +1,102 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+:root {
+    --dark-blue: #002147; /*Navy Blue*/
+    --accent-blue: #0056b3;
+    --soft-bg: #f0f2f5;
+    --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    background-color: var(--soft-bg);
+    color: #333;
+    font-family: 'Inter', sans-serif;
+}
+
+/*website hero*/
+.hero {
+    background: var(--dark-blue);
+    color: white;
+    padding: 60px 20px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+}
+
+.issue-card {
+    background: white;
+    border: none;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.sidebar {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+}
+
+/*Status Badges*/
+.s-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.s-open { background: #ffdce0; color: #ee1127; }
+.s-invest { background: #fff3cd; color: #ec9d0b; }
+.s-done { background: #d1e7dd; color: #5fe90f; }
+.s-none { background: #e2e3e5; color: #383d41; }
+
+.btn-main {
+    background: var(--dark-blue);
+    color: white;
+    padding: 10px 25px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.btn-main:hover {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.vote-count {
+    color: var(--dark-blue);
+    font-weight: bold;
+}

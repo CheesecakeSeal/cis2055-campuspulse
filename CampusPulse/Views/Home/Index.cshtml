@@ -1,0 +1,66 @@
+﻿@model IEnumerable<CampusPulse.Models.Report>
+<div class="container mt-4">
+    <head>
+        <link rel="stylesheet" href="Style.css" asp-append-version="true" />
+    </head>
+    <div class="hero text-center text-white p-5 rounded-3 mb-4" style="background-color: #002147;">
+        <h1 class="fw-bold">CampusPulse</h1>
+        <p>Report issues impacting safety and accessibility on campus</p>
+        <a asp-controller="Reports" asp-action="Create" class="btn btn-light fw-bold px-4">New Report</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <h3 class="mb-4">Trending Issues</h3>
+
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model.OrderByDescending(r => r.Upvotes).Take(5))
+                {
+                    //Logic to pick the concise class name
+                    string sClass = item.Status switch
+                    {
+                        "Open" => "s-open",
+                        "Being Investigated" => "s-invest",
+                        "Resolved" => "s-done",
+                        "No Action Required" => "s-none",
+                        _ => ""
+                    };
+
+                    <div class="issue-card shadow-sm p-3 mb-3 bg-white rounded-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="fw-bold mb-1">@item.Title</h5>
+                            <span class="s-badge @sClass">@item.Status</span>
+                        </div>
+                        
+                        <p class="text-muted small mb-2">@item.Location / @item.Category</p>
+                        <p class="mb-3">@item.Description</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="fw-bold" style="color: #002147;">@item.Upvotes Upvotes</span>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none small fw-bold" style="color: #0056b3;">View Pulse →</a>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-light border shadow-sm">
+                    No reports filed yet.
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="sidebar p-3 bg-white shadow-sm rounded-3">
+                <h5 class="fw-bold mb-3" style="color: #002147;">Navigation</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a asp-action="HallOfFame" class="text-decoration-none text-dark">Hall of Fame</a>
+                    </li>
+                    <li><a href="#" class="text-decoration-none text-dark">Trending Locations</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
