@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\Downloads\\cis2055-campuspulse\\CampusPulse\\CampusPulse.csproj": {}
+    "C:\\Users\\user\\source\\repos\\CheesecakeSeal\\cis2055-campuspulse\\CampusPulse\\CampusPulse.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\Downloads\\cis2055-campuspulse\\CampusPulse\\CampusPulse.csproj": {
+    "C:\\Users\\user\\source\\repos\\CheesecakeSeal\\cis2055-campuspulse\\CampusPulse\\CampusPulse.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\Downloads\\cis2055-campuspulse\\CampusPulse\\CampusPulse.csproj",
+        "projectUniqueName": "C:\\Users\\user\\source\\repos\\CheesecakeSeal\\cis2055-campuspulse\\CampusPulse\\CampusPulse.csproj",
         "projectName": "CampusPulse",
-        "projectPath": "C:\\Users\\user\\Downloads\\cis2055-campuspulse\\CampusPulse\\CampusPulse.csproj",
+        "projectPath": "C:\\Users\\user\\source\\repos\\CheesecakeSeal\\cis2055-campuspulse\\CampusPulse\\CampusPulse.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\Downloads\\cis2055-campuspulse\\CampusPulse\\obj\\",
+        "outputPath": "C:\\Users\\user\\source\\repos\\CheesecakeSeal\\cis2055-campuspulse\\CampusPulse\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -49,6 +49,12 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
+              "target": "Package",
+              "version": "[9.0.12, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

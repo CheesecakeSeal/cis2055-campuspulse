@@ -21,13 +21,18 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Reports" asp-action="Index">Browse Issues</a>
+                            <a class="nav-link" asp-controller="Reports" asp-action="Index">Browse Issues</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="HallOfFame">🏆 Hall of Fame</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="HallOfFame">Hall of Fame</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold" style="color: #66b3ff;" asp-controller="Reports" asp-action="Create">
+                                Report Issue
+                            </a>
                         </li>
                     </ul>
                 </div>

@@ -1,0 +1,63 @@
+﻿@model CampusPulse.Models.Report
+
+@{
+    ViewData["Title"] = "Submit Report";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header text-white text-center p-4" style="background-color: #002147;">
+                    <h2 class="fw-bold mb-0">Report a Campus Issue</h2>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label fw-bold">Issue Title</label>
+                            <input asp-for="Title" class="form-control" placeholder="e.g. Broken tiles in Quad" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Location" class="form-label fw-bold">Location</label>
+                                <input asp-for="Location" class="form-control" placeholder="e.g. Library Level 2" />
+                                <span asp-validation-for="Location" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Category" class="form-label fw-bold">Category</label>
+                                <select asp-for="Category" class="form-select">
+                                    <option value="">Select Category...</option>
+                                    <option value="Safety">Safety</option>
+                                    <option value="Accessibility">Accessibility</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the issue in detail..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ReporterEmail" class="form-label fw-bold">Your Email</label>
+                            <input asp-for="ReporterEmail" class="form-control" placeholder="username@um.edu.mt" />
+                            <span asp-validation-for="ReporterEmail" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn text-white py-2 fw-bold" style="background-color: #002147;">Submit Pulse Report</button>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

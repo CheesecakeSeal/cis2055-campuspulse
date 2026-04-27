@@ -83,19 +83,6 @@ body {
 .s-done { background: #d1e7dd; color: #5fe90f; }
 .s-none { background: #e2e3e5; color: #383d41; }
 
-.btn-main {
-    background: var(--dark-blue);
-    color: white;
-    padding: 10px 25px;
-    border-radius: 5px;
-    text-decoration: none;
-}
-
-.btn-main:hover {
-    background: var(--accent-blue);
-    color: white;
-}
-
 .vote-count {
     color: var(--dark-blue);
     font-weight: bold;

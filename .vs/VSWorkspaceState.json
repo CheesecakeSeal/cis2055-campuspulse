@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\.github",
+    "\\CampusPulse",
+    "\\CampusPulse\\bin",
+    "\\CampusPulse\\Controllers",
+    "\\CampusPulse\\Models",
+    "\\CampusPulse\\obj"
+  ],
+  "SelectedNode": "\\CampusPulse\\Models\\Investigation.cs",
+  "PreviewInSolutionExplorer": false
+}
