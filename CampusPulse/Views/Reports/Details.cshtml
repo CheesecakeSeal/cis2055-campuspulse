@@ -1,0 +1,178 @@
+﻿@model CampusPulse.Models.ViewModels.ReportDetailsViewModel
+
+@{
+    ViewData["Title"] = "Report Details";
+}
+
+<div class="container mt-5">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header text-white" style="background-color: #002147;">
+            <h2 class="mb-0">@Model.Report.Title</h2>
+        </div>
+
+        <div class="card-body">
+            <p>
+                <strong>Status:</strong>
+                <span class="badge bg-primary">@Model.Report.Status</span>
+            </p>
+
+            <p><strong>Category:</strong> @Model.Report.Category</p>
+            <p><strong>Location:</strong> @Model.Report.Location</p>
+            <p><strong>Date Reported:</strong> @Model.Report.Date_Reported.ToString("dd MMM yyyy HH:mm")</p>
+            <p><strong>Date/Time Observed:</strong> @Model.Report.Time_Observed.ToString("dd MMM yyyy HH:mm")</p>
+            <p><strong>Upvotes:</strong> @Model.Report.Upvotes</p>
+
+            <hr />
+
+            <h5>Description</h5>
+            <p>@Model.Report.Description</p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Report.ImageUrl))
+            {
+                <hr />
+                <h5>Image</h5>
+                <img src="@Model.Report.ImageUrl" alt="Report image" class="img-fluid rounded" />
+            }
+
+            <hr />
+
+            <h5>Reporter Details</h5>
+            <p><strong>Email:</strong> @Model.Report.ReporterEmail</p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Report.ReporterPhone))
+            {
+                <p><strong>Phone:</strong> @Model.Report.ReporterPhone</p>
+            }
+        </div>
+    </div>
+
+    @if (Model.Report.Investigation != null)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h4 class="mb-0">Investigation Update</h4>
+            </div>
+
+            <div class="card-body">
+                <p><strong>Actions Taken:</strong></p>
+                <p>@Model.Report.Investigation.ActionTaken</p>
+
+                <p><strong>Date of Action:</strong> @Model.Report.Investigation.ActionDate.ToString("dd MMM yyyy HH:mm")</p>
+                <p><strong>Investigator Email:</strong> @Model.Report.Investigation.InvestigatorEmail</p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Report.Investigation.InvestigatorPhone))
+                {
+                    <p><strong>Investigator Phone:</strong> @Model.Report.Investigation.InvestigatorPhone</p>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            No investigation update has been added yet.
+        </div>
+    }
+
+    @if (!Model.IsAuthenticated)
+    {
+        <div class="alert alert-warning">
+            Please log in to upvote or manage reports.
+        </div>
+    }
+
+    @if (Model.IsAuthenticated && !Model.IsOwner && !Model.IsInvestigator)
+    {
+        <form asp-action="Upvote" asp-route-id="@Model.Report.Id" method="post" class="mb-4">
+            <button type="submit" class="btn btn-success">
+                Upvote this report
+            </button>
+        </form>
+    }
+
+    @if (Model.IsOwner && !Model.IsInvestigator)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h4 class="mb-0">Reporter Actions</h4>
+            </div>
+
+            <div class="card-body">
+                <p>You submitted this report.</p>
+
+                <a asp-action="Edit" asp-route-id="@Model.Report.Id" class="btn btn-warning">
+                    Edit Report
+                </a>
+
+                <a asp-action="Delete" asp-route-id="@Model.Report.Id" class="btn btn-danger">
+                    Delete Report
+                </a>
+            </div>
+        </div>
+    }
+
+    @if (Model.IsInvestigator)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header text-white" style="background-color: #002147;">
+                <h4 class="mb-0">Investigator Actions</h4>
+            </div>
+
+            <div class="card-body">
+                <form asp-action="UpdateStatus" asp-route-id="@Model.Report.Id" method="post" class="mb-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Update Report Status</label>
+                        <select name="status" class="form-select">
+                            @foreach (var status in Model.StatusOptions)
+                            {
+                                if (status == Model.Report.Status)
+                                {
+                                    <option value="@status" selected>@status</option>
+                                }
+                                else
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Save Status
+                    </button>
+                </form>
+
+                <hr />
+
+                <form asp-action="SaveInvestigation" asp-route-id="@Model.Report.Id" method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Actions Taken</label>
+                        <textarea name="actionTaken" class="form-control" rows="5">@Model.Report.Investigation?.ActionTaken</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Optional Investigator Phone</label>
+                        <input name="investigatorPhone"
+                               class="form-control"
+                               value="@Model.Report.Investigation?.InvestigatorPhone" />
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        Save Investigation
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Back to Reports
+    </a>
+</div>

@@ -1,0 +1,43 @@
+﻿@model IEnumerable<CampusPulse.Models.Report>
+
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Submitted Reports</h1>
+
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Submit New Report</a>
+    </p>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Location</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Reported</th>
+                <th>Upvotes</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var report in Model)
+            {
+                <tr>
+                    <td>@report.Title</td>
+                    <td>@report.Location</td>
+                    <td>@report.Category</td>
+                    <td>@report.Status</td>
+                    <td>@report.Date_Reported.ToString("dd MMM yyyy HH:mm")</td>
+                    <td>@report.Upvotes</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@report.Id">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

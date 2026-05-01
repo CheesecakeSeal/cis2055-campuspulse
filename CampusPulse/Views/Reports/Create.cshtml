@@ -40,15 +40,21 @@
                         </div>
 
                         <div class="mb-3">
+                            <label asp-for="Time_Observed" class="form-label fw-bold">Date and Time Observed</label>
+                            <input asp-for="Time_Observed" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="Time_Observed" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
                             <label asp-for="Description" class="form-label fw-bold">Description</label>
                             <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the issue in detail..."></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
                         <div class="mb-4">
-                            <label asp-for="ReporterEmail" class="form-label fw-bold">Your Email</label>
-                            <input asp-for="ReporterEmail" class="form-control" placeholder="username@um.edu.mt" />
-                            <span asp-validation-for="ReporterEmail" class="text-danger"></span>
+                            <label asp-for="ReporterPhone" class="form-label fw-bold">Your Phone Number</label>
+                            <input asp-for="ReporterPhone" class="form-control" placeholder="+000 1234 5678" />
+                            <span asp-validation-for="ReporterPhone" class="text-danger"></span>
                         </div>
 
                         <div class="d-grid gap-2">
