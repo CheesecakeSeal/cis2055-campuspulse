@@ -1,0 +1,45 @@
+﻿@model CampusPulse.Models.Report
+
+@{
+    ViewData["Title"] = "Delete Report";
+}
+
+<div class="container mt-5">
+    <h2 class="text-danger">Delete Report</h2>
+
+    <div class="alert alert-warning">
+        Are you sure you want to delete this report? This action cannot be undone.
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h4>@Model.Title</h4>
+
+            <p>
+                <strong>Status:</strong> @Model.Status
+            </p>
+
+            <p>
+                <strong>Category:</strong> @Model.Category
+            </p>
+
+            <p>
+                <strong>Location:</strong> @Model.Location
+            </p>
+
+            <p>
+                <strong>Date Reported:</strong> @Model.Date_Reported.ToString("dd MMM yyyy HH:mm")
+            </p>
+
+            <p>
+                <strong>Description:</strong><br />
+                @Model.Description
+            </p>
+        </div>
+    </div>
+
+    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="mt-4">
+        <button type="submit" class="btn btn-danger">Delete Report</button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

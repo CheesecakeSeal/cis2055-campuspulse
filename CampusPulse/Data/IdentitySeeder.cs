@@ -24,7 +24,7 @@ namespace CampusPulse.Data
                 }
             }
 
-            // Testing Account. Probably fine to hardcode it for now
+            // Testing Account. Probably fine to hardcode it for now. Might want to work on a permanent solution later.
             const string investigatorEmail = "investigator@campuspulse.local";
             const string investigatorPassword = "Investigator123!";
 

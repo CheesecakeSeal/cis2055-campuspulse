@@ -157,5 +157,114 @@ namespace CampusPulse.Controllers
 
             return RedirectToAction(nameof(Details), new { id });
         }
+        private bool UserCanManageReport(Report report)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+
+            return User.Identity?.IsAuthenticated == true
+                && report.ReporterId == currentUserId
+                && !User.IsInRole(UserRoles.Investigator);
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var report = _reportsRepository.GetReportById(id);
+
+            if (report == null)
+            {
+                return NotFound();
+            }
+
+            if (!UserCanManageReport(report))
+            {
+                return Forbid();
+            }
+
+            return View(report);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(int id, Report updatedReport)
+        {
+            if (id != updatedReport.Id)
+            {
+                return NotFound();
+            }
+
+            var existingReport = _reportsRepository.GetReportById(id);
+
+            if (existingReport == null)
+            {
+                return NotFound();
+            }
+
+            if (!UserCanManageReport(existingReport))
+            {
+                return Forbid();
+            }
+
+            if (ModelState.IsValid)
+            {
+                existingReport.Title = updatedReport.Title;
+                existingReport.Location = updatedReport.Location;
+                existingReport.Time_Observed = updatedReport.Time_Observed;
+                existingReport.Category = updatedReport.Category;
+                existingReport.Description = updatedReport.Description;
+                existingReport.ReporterPhone = updatedReport.ReporterPhone;
+
+                // Do not update these here:
+                // ReporterId, ReporterEmail, Date_Reported, Status, Upvotes, Investigation
+
+                _reportsRepository.UpdateReport(existingReport);
+
+                return RedirectToAction(nameof(Details), new { id = existingReport.Id });
+            }
+
+            return View(updatedReport);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            var report = _reportsRepository.GetReportById(id);
+
+            if (report == null)
+            {
+                return NotFound();
+            }
+
+            if (!UserCanManageReport(report))
+            {
+                return Forbid();
+            }
+
+            return View(report);
+        }
+
+        [Authorize]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var report = _reportsRepository.GetReportById(id);
+
+            if (report == null)
+            {
+                return NotFound();
+            }
+
+            if (!UserCanManageReport(report))
+            {
+                return Forbid();
+            }
+
+            _reportsRepository.DeleteReport(id);
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

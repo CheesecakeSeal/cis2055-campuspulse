@@ -34,6 +34,27 @@ namespace CampusPulse.Models.Repositories
             _appDbContext.SaveChanges();
         }
 
+        public void UpdateReport(Report report)
+        {
+            _appDbContext.Reports.Update(report);
+            _appDbContext.SaveChanges();
+        }
+
+        public void DeleteReport(int id)
+        {
+            var report = _appDbContext.Reports
+                .Include(r => r.Investigation)
+                .FirstOrDefault(r => r.Id == id);
+
+            if (report == null)
+            {
+                return;
+            }
+
+            _appDbContext.Reports.Remove(report);
+            _appDbContext.SaveChanges();
+        }
+
         public void UpvoteReport(int id)
         {
             var report = _appDbContext.Reports.FirstOrDefault(r => r.Id == id);
