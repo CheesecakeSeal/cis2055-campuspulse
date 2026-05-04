@@ -42,7 +42,9 @@ namespace CampusPulse.Controllers
                 Report = report,
                 IsAuthenticated = User.Identity?.IsAuthenticated == true,
                 IsOwner = report.ReporterId == currentUserId,
-                IsInvestigator = User.IsInRole(UserRoles.Investigator)
+                IsInvestigator = User.IsInRole(UserRoles.Investigator),
+                HasUpvoted = currentUserId != null &&
+                     _reportsRepository.HasUserUpvotedReport(id, currentUserId)
             };
 
             return View(viewModel);
@@ -94,19 +96,29 @@ namespace CampusPulse.Controllers
 
             var currentUserId = _userManager.GetUserId(User);
 
+            if (string.IsNullOrWhiteSpace(currentUserId))
+            {
+                return Challenge();
+            }
+
             if (report.ReporterId == currentUserId)
             {
                 TempData["ErrorMessage"] = "You cannot upvote your own report.";
                 return RedirectToAction(nameof(Details), new { id });
             }
 
+            // Just In Case
             if (User.IsInRole(UserRoles.Investigator))
             {
                 TempData["ErrorMessage"] = "Investigators cannot upvote reports.";
                 return RedirectToAction(nameof(Details), new { id });
             }
 
-            _reportsRepository.UpvoteReport(id);
+            var nowUpvoted = _reportsRepository.ToggleUpvoteReport(id, currentUserId);
+
+            TempData["SuccessMessage"] = nowUpvoted
+                ? "Report upvoted."
+                : "Your upvote was removed.";
 
             return RedirectToAction(nameof(Details), new { id });
         }

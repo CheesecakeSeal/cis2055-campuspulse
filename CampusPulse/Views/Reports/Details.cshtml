@@ -12,6 +12,13 @@
         </div>
     }
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
     <div class="card shadow-sm mb-4">
         <div class="card-header text-white" style="background-color: #002147;">
             <h2 class="mb-0">@Model.Report.Title</h2>
@@ -28,6 +35,26 @@
             <p><strong>Date Reported:</strong> @Model.Report.Date_Reported.ToString("dd MMM yyyy HH:mm")</p>
             <p><strong>Date/Time Observed:</strong> @Model.Report.Time_Observed.ToString("dd MMM yyyy HH:mm")</p>
             <p><strong>Upvotes:</strong> @Model.Report.Upvotes</p>
+
+            @if (Model.IsAuthenticated && !Model.IsOwner && !Model.IsInvestigator)
+            {
+                <form asp-action="Upvote" asp-route-id="@Model.Report.Id" method="post" class="mt-3">
+                    @Html.AntiForgeryToken()
+
+                    @if (Model.HasUpvoted)
+                    {
+                        <button type="submit" class="btn btn-outline-danger">
+                            Remove Upvote
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="submit" class="btn btn-primary">
+                            Upvote this report
+                        </button>
+                    }
+                </form>
+            }
 
             <hr />
 
@@ -88,15 +115,6 @@
         </div>
     }
 
-    @if (Model.IsAuthenticated && !Model.IsOwner && !Model.IsInvestigator)
-    {
-        <form asp-action="Upvote" asp-route-id="@Model.Report.Id" method="post" class="mb-4">
-            <button type="submit" class="btn btn-success">
-                Upvote this report
-            </button>
-        </form>
-    }
-
     @if (Model.IsOwner && !Model.IsInvestigator)
     {
         <div class="card shadow-sm mb-4">
@@ -127,6 +145,8 @@
 
             <div class="card-body">
                 <form asp-action="UpdateStatus" asp-route-id="@Model.Report.Id" method="post" class="mb-4">
+                    @Html.AntiForgeryToken()
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Update Report Status</label>
                         <select name="status" class="form-select">
@@ -152,6 +172,8 @@
                 <hr />
 
                 <form asp-action="SaveInvestigation" asp-route-id="@Model.Report.Id" method="post">
+                    @Html.AntiForgeryToken()
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Actions Taken</label>
                         <textarea name="actionTaken" class="form-control" rows="5">@Model.Report.Investigation?.ActionTaken</textarea>

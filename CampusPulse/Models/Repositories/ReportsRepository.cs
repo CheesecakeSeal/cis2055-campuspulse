@@ -55,17 +55,51 @@ namespace CampusPulse.Models.Repositories
             _appDbContext.SaveChanges();
         }
 
-        public void UpvoteReport(int id)
+        public bool HasUserUpvotedReport(int reportId, string userId)
         {
-            var report = _appDbContext.Reports.FirstOrDefault(r => r.Id == id);
+            return _appDbContext.ReportUpvotes
+                .Any(ru => ru.ReportId == reportId && ru.UserId == userId);
+        }
+
+        public bool ToggleUpvoteReport(int reportId, string userId)
+        {
+            var report = _appDbContext.Reports
+                .FirstOrDefault(r => r.Id == reportId);
 
             if (report == null)
             {
-                return;
+                return false;
             }
 
-            report.Upvotes++;
+            var existingUpvote = _appDbContext.ReportUpvotes
+                .FirstOrDefault(ru => ru.ReportId == reportId && ru.UserId == userId);
+
+            if (existingUpvote == null)
+            {
+                var upvote = new ReportUpvote
+                {
+                    ReportId = reportId,
+                    UserId = userId,
+                    CreatedAt = DateTime.Now
+                };
+
+                _appDbContext.ReportUpvotes.Add(upvote);
+                report.Upvotes++;
+                _appDbContext.SaveChanges();
+
+                return true;
+            }
+
+            _appDbContext.ReportUpvotes.Remove(existingUpvote);
+
+            if (report.Upvotes > 0)
+            {
+                report.Upvotes--;
+            }
+
             _appDbContext.SaveChanges();
+
+            return false;
         }
 
         public void UpdateReportStatus(int id, string status)

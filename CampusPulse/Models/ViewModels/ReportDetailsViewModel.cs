@@ -12,6 +12,8 @@ namespace CampusPulse.Models.ViewModels
 
         public bool IsInvestigator { get; set; }
 
+        public bool HasUpvoted { get; set; }
+
         public List<string> StatusOptions { get; set; } = new()
         {
             "Open",

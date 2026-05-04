@@ -7,8 +7,8 @@
         void CreateReport(Report report);
         void UpdateReport(Report report);
         void DeleteReport(int id);
-
-        void UpvoteReport(int id);
+        bool HasUserUpvotedReport(int reportId, string userId);
+        bool ToggleUpvoteReport(int reportId, string userId);
         void UpdateReportStatus(int id, string status);
 
         void AddOrUpdateInvestigation(

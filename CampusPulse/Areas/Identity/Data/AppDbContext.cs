@@ -14,6 +14,7 @@ namespace CampusPulse.Data
 
         public DbSet<Report> Reports { get; set; }
         public DbSet<Investigation> Investigations { get; set; }
+        public DbSet<ReportUpvote> ReportUpvotes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -32,6 +33,19 @@ namespace CampusPulse.Data
             builder.Entity<Report>()
                 .Property(r => r.Upvotes)
                 .HasDefaultValue(0);
+
+            builder.Entity<ReportUpvote>()
+                .HasKey(ru => new { ru.ReportId, ru.UserId });
+
+            builder.Entity<ReportUpvote>()
+                .HasOne(ru => ru.Report)
+                .WithMany(r => r.ReportUpvotes)
+                .HasForeignKey(ru => ru.ReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ReportUpvote>()
+                .Property(ru => ru.UserId)
+                .HasMaxLength(450);
         }
     }
 }
