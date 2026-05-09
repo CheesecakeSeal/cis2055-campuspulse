@@ -34,6 +34,7 @@ namespace CampusPulse.Models
         public string? ImageUrl { get; set; }
 
         public int Upvotes { get; set; } = 0;
+        public DateTime DateReported { get; set; } = DateTime.Now;
 
         public virtual Investigation? Investigation { get; set; }
 

@@ -1,9 +1,11 @@
+using CampusPulse.Data;
 using CampusPulse.Models;
 using CampusPulse.Models.Interfaces;
 using CampusPulse.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampusPulse.Controllers
 {
@@ -11,40 +13,50 @@ namespace CampusPulse.Controllers
     {
         private readonly IReportsRepository _reportsRepository;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly AppDbContext _context;
 
-        public ReportsController(
-            IReportsRepository reportsRepository,
-            UserManager<IdentityUser> userManager)
+        public ReportsController(IReportsRepository reportsRepository,UserManager<IdentityUser> userManager,AppDbContext context)
         {
             _reportsRepository = reportsRepository;
             _userManager = userManager;
+            _context = context;
         }
+
 
         public IActionResult Index()
         {
-            var reports = _reportsRepository.GetAllReports();
-            return View(reports);
+            var now = DateTime.Now;
+
+            var trendingIssues = _context.Reports
+                .ToList() //allows for more complicated math
+                .OrderByDescending(r => {
+                    double hoursOld = (now - r.DateReported).TotalHours;
+                    //Formula to calculate what's trending
+                    return r.Upvotes / (hoursOld + 2);
+                })
+                .Take(5)
+                .ToList();
+
+            return View(trendingIssues);
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int? id)
         {
-            var report = _reportsRepository.GetReportById(id);
+            if (id == null) return NotFound();
 
-            if (report == null)
-            {
-                return NotFound();
-            }
+            var report = await _context.Reports
+                .Include(r => r.Investigation)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
-            var currentUserId = _userManager.GetUserId(User);
+            if (report == null) return NotFound();
 
             var viewModel = new ReportDetailsViewModel
             {
                 Report = report,
-                IsAuthenticated = User.Identity?.IsAuthenticated == true,
-                IsOwner = report.ReporterId == currentUserId,
-                IsInvestigator = User.IsInRole(UserRoles.Investigator),
-                HasUpvoted = currentUserId != null &&
-                     _reportsRepository.HasUserUpvotedReport(id, currentUserId)
+                IsAuthenticated = User.Identity?.IsAuthenticated ?? false,
+                IsOwner = report.ReporterEmail == User.Identity?.Name,
+                IsInvestigator = User.IsInRole("Investigator"),
+                HasUpvoted = false
             };
 
             return View(viewModel);
@@ -60,25 +72,19 @@ namespace CampusPulse.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Report report)
+        public async Task<IActionResult> Create(Report report)
         {
-            report.ReporterId = _userManager.GetUserId(User);
-            report.ReporterEmail = User.Identity?.Name ?? string.Empty;
-
-            ModelState.Remove(nameof(Report.ReporterId));
-            ModelState.Remove(nameof(Report.ReporterEmail));
-
             if (ModelState.IsValid)
             {
                 report.Date_Reported = DateTime.Now;
                 report.Status = "Open";
                 report.Upvotes = 0;
 
-                _reportsRepository.CreateReport(report);
+                _context.Reports.Add(report);
+                await _context.SaveChangesAsync();
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Home");
             }
-
             return View(report);
         }
 
