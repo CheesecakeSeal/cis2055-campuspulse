@@ -1,0 +1,42 @@
+﻿@model IEnumerable<CampusPulse.Models.ViewModels.ReporterStatsViewModel>
+
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">Reporter Hall of Fame</h1>
+        <p class="lead">Our top contributors making the campus a better place.</p>
+    </div>
+
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle bg-white">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 100px;">Rank</th>
+                    <th>Reporter</th>
+                    <th class="text-center">Pulses Submitted</th>
+                    <th class="text-center">Total Community Support</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int rank = 1;
+                }
+                @foreach (var rep in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="fw-bold ms-2">#@rank</span>
+                        </td>
+                        <td class="fw-bold">@rep.Email</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary fs-6">@rep.ReportsSubmitted</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-muted">@rep.TotalUpvotes Upvotes</span>
+                        </td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

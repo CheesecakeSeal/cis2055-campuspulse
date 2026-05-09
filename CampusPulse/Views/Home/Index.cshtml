@@ -14,7 +14,7 @@
 
             @if (Model != null && Model.Any())
             {
-                foreach (var item in Model.OrderByDescending(r => r.Upvotes).Take(5))
+                @foreach (var item in Model)
                 {
                     //Logic to pick the concise class name
                     string sClass = item.Status switch

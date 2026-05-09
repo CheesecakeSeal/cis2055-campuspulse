@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CampusPulse")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f8b5471ad8e4442fc6e551efb47afbee04c7288f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+07c47409957f67ef5f585c63bd8b1d81b869a10e")]
 [assembly: System.Reflection.AssemblyProductAttribute("CampusPulse")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CampusPulse")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

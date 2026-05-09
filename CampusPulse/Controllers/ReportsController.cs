@@ -15,76 +15,68 @@ namespace CampusPulse.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly AppDbContext _context;
 
-        public ReportsController(IReportsRepository reportsRepository,UserManager<IdentityUser> userManager,AppDbContext context)
+     public ReportsController(IReportsRepository reportsRepository, UserManager<IdentityUser> userManager, AppDbContext context)
+
+
         {
             _reportsRepository = reportsRepository;
             _userManager = userManager;
-            _context = context;
+            _context = context; _context = context;
         }
-
-
         public IActionResult Index()
         {
-            var now = DateTime.Now;
-
-            var trendingIssues = _context.Reports
-                .ToList() //allows for more complicated math
-                .OrderByDescending(r => {
-                    double hoursOld = (now - r.DateReported).TotalHours;
-                    //Formula to calculate what's trending
-                    return r.Upvotes / (hoursOld + 2);
-                })
-                .Take(5)
-                .ToList();
-
-            return View(trendingIssues);
+            var reports = _reportsRepository.GetAllReports();
+            return View(reports);
         }
 
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int id)
         {
-            if (id == null) return NotFound();
-
-            var report = await _context.Reports
-                .Include(r => r.Investigation)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (report == null) return NotFound();
-
+            var report = _reportsRepository.GetReportById(id);
+            if (report == null)
+            {
+                return NotFound();
+            }
+            var currentUserId = _userManager.GetUserId(User);
             var viewModel = new ReportDetailsViewModel
             {
                 Report = report,
-                IsAuthenticated = User.Identity?.IsAuthenticated ?? false,
-                IsOwner = report.ReporterEmail == User.Identity?.Name,
-                IsInvestigator = User.IsInRole("Investigator"),
-                HasUpvoted = false
+                IsAuthenticated = User.Identity?.IsAuthenticated == true,
+                IsOwner = report.ReporterId == currentUserId,
+                IsInvestigator = User.IsInRole(UserRoles.Investigator),
+                HasUpvoted = currentUserId != null &&
+                     _reportsRepository.HasUserUpvotedReport(id, currentUserId)
             };
 
             return View(viewModel);
         }
-
-        [Authorize]
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
-
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Report report)
-        {
-            if (ModelState.IsValid)
+        public IActionResult Create(Report report)
             {
+            report.ReporterId = _userManager.GetUserId(User);
+            report.ReporterEmail = User.Identity?.Name ?? string.Empty; report.ReporterEmail = User.Identity?.Name ?? string.Empty;
+
+            ModelState.Remove(nameof(Report.ReporterId));
+            ModelState.Remove(nameof(Report.ReporterEmail)); ModelState.Remove(nameof(Report.ReporterEmail));
+
+            if (ModelState.IsValid)
+                {
                 report.Date_Reported = DateTime.Now;
                 report.Status = "Open";
                 report.Upvotes = 0;
 
-                _context.Reports.Add(report);
-                await _context.SaveChangesAsync();
+                _reportsRepository.CreateReport(report);
 
-                return RedirectToAction("Index", "Home");
+
+                return RedirectToAction(nameof(Index));
             }
+
             return View(report);
         }
 
@@ -97,12 +89,17 @@ namespace CampusPulse.Controllers
 
             if (report == null)
             {
-                return NotFound();
+                 return NotFound();
             }
 
             var currentUserId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(currentUserId))
+            {
+                return Challenge();
+            }
+
+            if (report.ReporterId == currentUserId)
             {
                 return Challenge();
             }
