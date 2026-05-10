@@ -18,5 +18,5 @@ dotnet tool install --global dotnet-ef --version 9.0.12
 
 ### Investigator Account
 
-Email: investigator@campuspulse.local
-Password: Investigator123!
+- Email: investigator@campuspulse.local
+- Password: Investigator123!
