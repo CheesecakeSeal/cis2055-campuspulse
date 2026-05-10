@@ -1,6 +1,8 @@
 using CampusPulse.Data;
 using CampusPulse.Models.Interfaces;
 using CampusPulse.Models.Repositories;
+using CampusPulse.Services;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +21,7 @@ builder.Services
     .AddDefaultIdentity<IdentityUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
-
+        options.User.RequireUniqueEmail = true;
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
         options.Password.RequireUppercase = true;
@@ -30,6 +32,27 @@ builder.Services
     .AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.SlidingExpiration = true;
+
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    // Allows the request to reach the controller so an error can be shown. 
+    // The real accepted image size is enforced by ImageUploadService (3mb), 
+    // but this prevents a 400 bad error when you upload things that are too large
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
+});
+
+builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 
 var app = builder.Build();
 

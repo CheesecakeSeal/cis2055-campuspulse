@@ -11,8 +11,11 @@
                 <div class="card-header text-white text-center p-4" style="background-color: #002147;">
                     <h2 class="fw-bold mb-0">Report a Campus Issue</h2>
                 </div>
+
                 <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                         <div class="mb-3">
@@ -27,6 +30,7 @@
                                 <input asp-for="Location" class="form-control" placeholder="e.g. Library Level 2" />
                                 <span asp-validation-for="Location" class="text-danger"></span>
                             </div>
+
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Category" class="form-label fw-bold">Category</label>
                                 <select asp-for="Category" class="form-select">
@@ -51,19 +55,42 @@
 
                         <div class="mb-3">
                             <label asp-for="Description" class="form-label fw-bold">Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the issue in detail..."></textarea>
+                            <textarea asp-for="Description"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Describe the issue in detail..."></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label asp-for="ReporterPhone" class="form-label fw-bold">Your Phone Number</label>
                             <input asp-for="ReporterPhone" class="form-control" placeholder="+000 1234 5678" />
                             <span asp-validation-for="ReporterPhone" class="text-danger"></span>
                         </div>
 
+                        <div class="mb-4">
+                            <label for="imageFile" class="form-label fw-bold">Optional Image</label>
+                            <input type="file"
+                                   name="imageFile"
+                                   id="imageFile"
+                                   class="form-control"
+                                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+
+                            <span class="text-danger">@Html.ValidationMessage("ImageFile")</span>
+
+                            <div class="form-text">
+                                Optional. JPG, PNG, or WebP only. Maximum size: 2 MB.
+                            </div>
+                        </div>
+
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn text-white py-2 fw-bold" style="background-color: #002147;">Submit Pulse Report</button>
-                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn text-white py-2 fw-bold" style="background-color: #002147;">
+                                Submit Pulse Report
+                            </button>
+
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -71,3 +98,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,6 +1,7 @@
 using CampusPulse.Models;
 using CampusPulse.Models.Interfaces;
 using CampusPulse.Models.ViewModels;
+using CampusPulse.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,13 +12,16 @@ namespace CampusPulse.Controllers
     {
         private readonly IReportsRepository _reportsRepository;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IImageUploadService _imageUploadService;
 
         public ReportsController(
             IReportsRepository reportsRepository,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            IImageUploadService imageUploadService)
         {
             _reportsRepository = reportsRepository;
             _userManager = userManager;
+            _imageUploadService = imageUploadService;
         }
 
         public IActionResult Index()
@@ -60,16 +64,32 @@ namespace CampusPulse.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Report report)
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10 * 1024 * 1024)]
+        public async Task<IActionResult> Create(Report report, IFormFile? imageFile)
         {
             report.ReporterId = _userManager.GetUserId(User);
             report.ReporterEmail = User.Identity?.Name ?? string.Empty;
 
             ModelState.Remove(nameof(Report.ReporterId));
             ModelState.Remove(nameof(Report.ReporterEmail));
+            ModelState.Remove(nameof(Report.ImageUrl));
 
             if (ModelState.IsValid)
             {
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var uploadResult = await _imageUploadService.SaveReportImageAsync(imageFile);
+
+                    if (!uploadResult.Success)
+                    {
+                        ModelState.AddModelError("ImageFile", uploadResult.ErrorMessage ?? "Invalid image upload.");
+                        return View(report);
+                    }
+
+                    report.ImageUrl = uploadResult.ImageUrl;
+                }
+
                 report.Date_Reported = DateTime.Now;
                 report.Status = "Open";
                 report.Upvotes = 0;
@@ -191,7 +211,9 @@ namespace CampusPulse.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Report updatedReport)
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10 * 1024 * 1024)]
+        public async Task<IActionResult> Edit(int id, Report updatedReport, IFormFile? imageFile)
         {
             if (id != updatedReport.Id)
             {
@@ -210,6 +232,10 @@ namespace CampusPulse.Controllers
                 return Forbid();
             }
 
+            ModelState.Remove(nameof(Report.ReporterId));
+            ModelState.Remove(nameof(Report.ReporterEmail));
+            ModelState.Remove(nameof(Report.ImageUrl));
+
             if (ModelState.IsValid)
             {
                 existingReport.Title = updatedReport.Title;
@@ -219,11 +245,26 @@ namespace CampusPulse.Controllers
                 existingReport.Description = updatedReport.Description;
                 existingReport.ReporterPhone = updatedReport.ReporterPhone;
 
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var uploadResult = await _imageUploadService.SaveReportImageAsync(imageFile);
+
+                    if (!uploadResult.Success)
+                    {
+                        ModelState.AddModelError("ImageFile", uploadResult.ErrorMessage ?? "Invalid image upload.");
+                        return View(existingReport);
+                    }
+
+                    _imageUploadService.DeleteImage(existingReport.ImageUrl);
+                    existingReport.ImageUrl = uploadResult.ImageUrl;
+                }
+
                 _reportsRepository.UpdateReport(existingReport);
 
                 return RedirectToAction(nameof(Details), new { id = existingReport.Id });
             }
 
+            updatedReport.ImageUrl = existingReport.ImageUrl;
             return View(updatedReport);
         }
 
@@ -263,6 +304,7 @@ namespace CampusPulse.Controllers
                 return Forbid();
             }
 
+            _imageUploadService.DeleteImage(report.ImageUrl);
             _reportsRepository.DeleteReport(id);
 
             return RedirectToAction(nameof(Index));
