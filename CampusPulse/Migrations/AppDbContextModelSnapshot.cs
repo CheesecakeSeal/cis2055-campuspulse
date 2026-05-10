@@ -58,9 +58,6 @@ namespace CampusPulse.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateReported")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("Date_Reported")
                         .HasColumnType("datetime2");
 

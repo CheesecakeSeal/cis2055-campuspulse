@@ -29,12 +29,11 @@ namespace CampusPulse.Models
 
         public string ReporterEmail { get; set; } = string.Empty;
 
-        public string?   ReporterPhone { get; set; }
+        public string? ReporterPhone { get; set; }
 
         public string? ImageUrl { get; set; }
 
         public int Upvotes { get; set; } = 0;
-        public DateTime DateReported { get; set; } = DateTime.Now;
 
         public virtual Investigation? Investigation { get; set; }
 

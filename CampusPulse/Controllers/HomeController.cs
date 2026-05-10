@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
 using CampusPulse.Data;
-using CampusPulse.Models;
-using System.Linq;
 using CampusPulse.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CampusPulse.Controllers
 {
@@ -19,12 +17,11 @@ namespace CampusPulse.Controllers
         {
             var now = DateTime.Now;
 
-            var allReports = _context.Reports.ToList();
-
-            var trendingPulses = allReports
-                .OrderByDescending(r => {
-                    double hoursOld = (now - r.DateReported).TotalHours;
-
+            var trendingPulses = _context.Reports
+                .AsEnumerable()
+                .OrderByDescending(r =>
+                {
+                    double hoursOld = (now - r.Date_Reported).TotalHours;
                     return (double)r.Upvotes / (hoursOld + 2);
                 })
                 .Take(5)
@@ -35,8 +32,11 @@ namespace CampusPulse.Controllers
 
         public IActionResult HallOfFame()
         {
+            var currentYear = DateTime.Now.Year;
+
             var leaderboard = _context.Reports
-                .Where(r => !string.IsNullOrEmpty(r.ReporterEmail))
+                .Where(r => !string.IsNullOrEmpty(r.ReporterEmail)
+                            && r.Date_Reported.Year == currentYear)
                 .GroupBy(r => r.ReporterEmail)
                 .Select(group => new ReporterStatsViewModel
                 {

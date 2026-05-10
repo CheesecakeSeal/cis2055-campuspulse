@@ -1,11 +1,9 @@
-using CampusPulse.Data;
 using CampusPulse.Models;
 using CampusPulse.Models.Interfaces;
 using CampusPulse.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CampusPulse.Controllers
 {
@@ -13,16 +11,15 @@ namespace CampusPulse.Controllers
     {
         private readonly IReportsRepository _reportsRepository;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly AppDbContext _context;
 
-     public ReportsController(IReportsRepository reportsRepository, UserManager<IdentityUser> userManager, AppDbContext context)
-
-
+        public ReportsController(
+            IReportsRepository reportsRepository,
+            UserManager<IdentityUser> userManager)
         {
             _reportsRepository = reportsRepository;
             _userManager = userManager;
-            _context = context; _context = context;
         }
+
         public IActionResult Index()
         {
             var reports = _reportsRepository.GetAllReports();
@@ -32,11 +29,14 @@ namespace CampusPulse.Controllers
         public IActionResult Details(int id)
         {
             var report = _reportsRepository.GetReportById(id);
+
             if (report == null)
             {
                 return NotFound();
             }
+
             var currentUserId = _userManager.GetUserId(User);
+
             var viewModel = new ReportDetailsViewModel
             {
                 Report = report,
@@ -44,35 +44,37 @@ namespace CampusPulse.Controllers
                 IsOwner = report.ReporterId == currentUserId,
                 IsInvestigator = User.IsInRole(UserRoles.Investigator),
                 HasUpvoted = currentUserId != null &&
-                     _reportsRepository.HasUserUpvotedReport(id, currentUserId)
+                             _reportsRepository.HasUserUpvotedReport(id, currentUserId)
             };
 
             return View(viewModel);
         }
+
+        [Authorize]
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
+
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Report report)
-            {
+        {
             report.ReporterId = _userManager.GetUserId(User);
-            report.ReporterEmail = User.Identity?.Name ?? string.Empty; report.ReporterEmail = User.Identity?.Name ?? string.Empty;
+            report.ReporterEmail = User.Identity?.Name ?? string.Empty;
 
             ModelState.Remove(nameof(Report.ReporterId));
-            ModelState.Remove(nameof(Report.ReporterEmail)); ModelState.Remove(nameof(Report.ReporterEmail));
+            ModelState.Remove(nameof(Report.ReporterEmail));
 
             if (ModelState.IsValid)
-                {
+            {
                 report.Date_Reported = DateTime.Now;
                 report.Status = "Open";
                 report.Upvotes = 0;
 
                 _reportsRepository.CreateReport(report);
-
 
                 return RedirectToAction(nameof(Index));
             }
@@ -89,7 +91,7 @@ namespace CampusPulse.Controllers
 
             if (report == null)
             {
-                 return NotFound();
+                return NotFound();
             }
 
             var currentUserId = _userManager.GetUserId(User);
@@ -101,16 +103,10 @@ namespace CampusPulse.Controllers
 
             if (report.ReporterId == currentUserId)
             {
-                return Challenge();
-            }
-
-            if (report.ReporterId == currentUserId)
-            {
                 TempData["ErrorMessage"] = "You cannot upvote your own report.";
                 return RedirectToAction(nameof(Details), new { id });
             }
 
-            // Just In Case
             if (User.IsInRole(UserRoles.Investigator))
             {
                 TempData["ErrorMessage"] = "Investigators cannot upvote reports.";
@@ -172,14 +168,7 @@ namespace CampusPulse.Controllers
 
             return RedirectToAction(nameof(Details), new { id });
         }
-        private bool UserCanManageReport(Report report)
-        {
-            var currentUserId = _userManager.GetUserId(User);
 
-            return User.Identity?.IsAuthenticated == true
-                && report.ReporterId == currentUserId
-                && !User.IsInRole(UserRoles.Investigator);
-        }
         [Authorize]
         [HttpGet]
         public IActionResult Edit(int id)
@@ -230,9 +219,6 @@ namespace CampusPulse.Controllers
                 existingReport.Description = updatedReport.Description;
                 existingReport.ReporterPhone = updatedReport.ReporterPhone;
 
-                // Do not update these here:
-                // ReporterId, ReporterEmail, Date_Reported, Status, Upvotes, Investigation
-
                 _reportsRepository.UpdateReport(existingReport);
 
                 return RedirectToAction(nameof(Details), new { id = existingReport.Id });
@@ -280,6 +266,15 @@ namespace CampusPulse.Controllers
             _reportsRepository.DeleteReport(id);
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private bool UserCanManageReport(Report report)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+
+            return User.Identity?.IsAuthenticated == true
+                   && report.ReporterId == currentUserId
+                   && !User.IsInRole(UserRoles.Investigator);
         }
     }
 }
