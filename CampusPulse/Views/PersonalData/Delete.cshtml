@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Delete Account";
+}
+
+<div class="container mt-5">
+    <h1 class="text-danger">Delete Account</h1>
+
+    <div class="alert alert-danger">
+        This action cannot be undone.
+    </div>
+
+    <p>
+        Deleting your account will:
+    </p>
+
+    <ul>
+        <li>Delete your login account.</li>
+        <li>Remove your upvotes from reports.</li>
+        <li>Anonymise your submitted reports.</li>
+        <li>Remove phone numbers and uploaded images from your submitted reports.</li>
+        <li>Anonymise investigation entries you authored, if you are an investigator.</li>
+    </ul>
+
+    <form asp-action="DeleteConfirmed" method="post">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label fw-bold">Confirm your password</label>
+            <input type="password"
+                   id="password"
+                   name="password"
+                   class="form-control"
+                   autocomplete="current-password" />
+        </div>
+
+        <button type="submit" class="btn btn-danger">
+            Permanently Delete My Account
+        </button>
+
+        <a asp-action="Index" class="btn btn-secondary">
+            Cancel
+        </a>
+    </form>
+</div>

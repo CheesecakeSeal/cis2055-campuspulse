@@ -21,7 +21,9 @@ builder.Services
     .AddDefaultIdentity<IdentityUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
+
         options.User.RequireUniqueEmail = true;
+
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
         options.Password.RequireUppercase = true;
@@ -30,8 +32,6 @@ builder.Services
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
-
-builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -46,13 +46,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    // Allows the request to reach the controller so an error can be shown. 
-    // The real accepted image size is enforced by ImageUploadService (3mb), 
-    // but this prevents a 400 bad error when you upload things that are too large
+    // Allows the request to reach the controller so a validation error can be shown.
+    // The real accepted image size is still enforced by ImageUploadService.
     options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
 });
 
+builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+builder.Services.AddScoped<IUserDataService, UserDataService>();
 
 var app = builder.Build();
 

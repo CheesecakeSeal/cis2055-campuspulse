@@ -1,0 +1,35 @@
+﻿@{
+    ViewData["Title"] = "Personal Data";
+}
+
+<div class="container mt-5">
+    <h1>Personal Data</h1>
+
+    <p>
+        From this page, you can download the personal data associated with your CampusPulse account
+        or delete your account.
+    </p>
+
+    <div class="alert alert-info">
+        Downloading your data will generate a JSON file containing your account details,
+        submitted reports, upvotes, and investigation entries where applicable.
+    </div>
+
+    <form asp-action="Download" method="post" class="mb-4">
+        @Html.AntiForgeryToken()
+
+        <button type="submit" class="btn btn-primary">
+            Download My Data
+        </button>
+    </form>
+
+    <div class="alert alert-warning">
+        Deleting your account will remove your login account, remove your upvotes,
+        delete images uploaded with your reports, and anonymise your reports instead of deleting
+        the campus issue history.
+    </div>
+
+    <a asp-action="Delete" class="btn btn-danger">
+        Delete My Account
+    </a>
+</div>
