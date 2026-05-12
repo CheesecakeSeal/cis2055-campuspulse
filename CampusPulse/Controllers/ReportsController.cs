@@ -24,10 +24,42 @@ namespace CampusPulse.Controllers
             _imageUploadService = imageUploadService;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string searchString, string location, string category, string status)
         {
             var reports = _reportsRepository.GetAllReports();
-            return View(reports);
+
+            //Search Filter
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                reports = reports.Where(r => r.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+                                          || r.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                                 .ToList();
+            }
+
+            //Filter by Location
+            if (!string.IsNullOrEmpty(location))
+            {
+                reports = reports.Where(r => r.Location.Contains(location, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            //Category Filter
+            if (!string.IsNullOrEmpty(category))
+            {
+                reports = reports.Where(r => r.Category == category).ToList();
+            }
+
+            //Status Filter
+            if (!string.IsNullOrEmpty(status))
+            {
+                reports = reports.Where(r => r.Status == status).ToList();
+            }
+
+            var filteredReports = reports.OrderByDescending(r => r.Date_Reported).ToList();
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentLocation"] = location;
+            ViewData["CurrentCategory"] = category;
+            ViewData["CurrentStatus"] = status;
+            return View(filteredReports);
         }
 
         public IActionResult Details(int id)
