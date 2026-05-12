@@ -44,6 +44,7 @@
                     <option value="Open">Open</option>
                     <option value="Being Investigated">Being Investigated</option>
                     <option value="Resolved">Resolved</option>
+                    <option value="No Action Required">No Action Required</option>
                 </select>
             </div>
             <div class="col-md-4 d-flex align-items-end">
@@ -77,20 +78,7 @@
                         <td class="fw-bold">@report.Title</td>
                         <td>@report.Location</td>
                         <td>@report.Category</td>
-                        <td>
-                            @if (report.Status == "Resolved")
-                            {
-                                <span class="badge bg-success">Resolved</span>
-                            }
-                            else if (report.Status == "Being Investigated")
-                            {
-                                <span class="badge bg-warning text-dark">Investigating</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-primary">Open</span>
-                            }
-                        </td>
+                        <td>@report.Status</td>
                         <td>@report.Date_Reported.ToString("dd MMM HH:mm")</td>
                         <td>@report.Upvotes</td>
                         <td>
