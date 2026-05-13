@@ -46,3 +46,31 @@ To create an investigator account:
    ```
 
 6. Log out and log back in with that account.
+
+## Email Notifications with Mailtrap
+
+CampusPulse supports email notifications for the following events:
+
+- A new report is submitted: investigators are notified.
+- A report status is updated: the original reporter is notified.
+- An investigation entry is added or updated: the original reporter is notified.
+
+For security reasons, SMTP credentials are not stored in `appsettings.json` or committed to GitHub.  
+During development/testing, Mailtrap can be configured using .NET User Secrets.
+
+From the `CampusPulse` project folder, run:
+
+```powershell
+dotnet user-secrets init
+
+dotnet user-secrets set "EmailSettings:Enabled" "true"
+dotnet user-secrets set "EmailSettings:SmtpHost" "sandbox.smtp.mailtrap.io"
+dotnet user-secrets set "EmailSettings:SmtpPort" "587"
+dotnet user-secrets set "EmailSettings:UseStartTls" "true"
+dotnet user-secrets set "EmailSettings:Username" "YOUR_MAILTRAP_USERNAME"
+dotnet user-secrets set "EmailSettings:Password" "YOUR_MAILTRAP_PASSWORD"
+dotnet user-secrets set "EmailSettings:FromAddress" "noreply@campuspulse.local"
+dotnet user-secrets set "EmailSettings:FromName" "CampusPulse"
+```
+
+To test email notifications for investiagors, add at least one investigator email to the `InvestigatorEmails` table (see above).
