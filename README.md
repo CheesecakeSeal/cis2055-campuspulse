@@ -31,7 +31,7 @@ To create an investigator account:
 ```
 
 4. Select the CampusPulse database.
-5. Run this query, adding in whatever email address you wish in place of youremail@exxample.com:
+5. Run this query, adding in whatever email address you wish in place of youremail@example.com:
 
 ```sql
    IF NOT EXISTS (
