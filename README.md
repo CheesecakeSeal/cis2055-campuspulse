@@ -23,7 +23,7 @@ For security reasons, the application does not include a default investigator ac
 To create an investigator account:
 
 1. Run the application once so the database is created.
-2. Register a normal account using the email address that should become an investigator.
+2. Register a normal account using the email address and display name that should become an investigator.
 3. Open SQL Server Management Studio and connect to:
 
 ```text
