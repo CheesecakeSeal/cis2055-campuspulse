@@ -2,9 +2,10 @@
 {
     public class ReporterStatsViewModel
     {
-        public string Email { get; set; }
-        public int TotalUpvotes { get; set; }
-        public int ReportsSubmitted { get; set; }
         public string DisplayName { get; set; } = string.Empty;
+
+        public int ReportsSubmitted { get; set; }
+
+        public int TotalUpvotes { get; set; }
     }
 }

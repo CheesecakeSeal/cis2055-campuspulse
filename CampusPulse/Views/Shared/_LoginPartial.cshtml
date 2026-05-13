@@ -1,13 +1,22 @@
-﻿@using Microsoft.AspNetCore.Identity
+﻿@using CampusPulse.Models
+@using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+
+@{
+    var currentUser = SignInManager.IsSignedIn(User)
+        ? await UserManager.GetUserAsync(User)
+        : null;
+
+    var displayName = currentUser?.DisplayName ?? User.Identity?.Name;
+}
 
 <ul class="navbar-nav ms-auto">
     @if (SignInManager.IsSignedIn(User))
     {
         <li class="nav-item">
             <a class="nav-link text-white" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
-                Hello @User.Identity?.Name!
+                Hello @displayName!
             </a>
         </li>
 

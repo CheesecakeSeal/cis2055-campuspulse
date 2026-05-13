@@ -63,6 +63,7 @@ namespace CampusPulse.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(string password)
         {
             var user = await _userManager.GetUserAsync(User);

@@ -13,52 +13,62 @@ namespace CampusPulse.Controllers
         private readonly IReportsRepository _reportsRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IImageUploadService _imageUploadService;
+        private readonly ICampusPulseNotificationService _notificationService;
 
         public ReportsController(
             IReportsRepository reportsRepository,
             UserManager<ApplicationUser> userManager,
-            IImageUploadService imageUploadService)
+            IImageUploadService imageUploadService,
+            ICampusPulseNotificationService notificationService)
         {
             _reportsRepository = reportsRepository;
             _userManager = userManager;
             _imageUploadService = imageUploadService;
+            _notificationService = notificationService;
         }
 
         public IActionResult Index(string searchString, string location, string category, string status)
         {
             var reports = _reportsRepository.GetAllReports();
 
-            //Search Filter
             if (!string.IsNullOrEmpty(searchString))
             {
-                reports = reports.Where(r => r.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase)
-                                          || r.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                                 .ToList();
+                reports = reports
+                    .Where(r => r.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+                             || r.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
 
-            //Filter by Location
             if (!string.IsNullOrEmpty(location))
             {
-                reports = reports.Where(r => r.Location.Contains(location, StringComparison.OrdinalIgnoreCase)).ToList();
+                reports = reports
+                    .Where(r => r.Location.Contains(location, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
 
-            //Category Filter
             if (!string.IsNullOrEmpty(category))
             {
-                reports = reports.Where(r => r.Category == category).ToList();
+                reports = reports
+                    .Where(r => r.Category == category)
+                    .ToList();
             }
 
-            //Status Filter
             if (!string.IsNullOrEmpty(status))
             {
-                reports = reports.Where(r => r.Status == status).ToList();
+                reports = reports
+                    .Where(r => r.Status == status)
+                    .ToList();
             }
 
-            var filteredReports = reports.OrderByDescending(r => r.Date_Reported).ToList();
+            var filteredReports = reports
+                .OrderByDescending(r => r.Date_Reported)
+                .ToList();
+
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentLocation"] = location;
             ViewData["CurrentCategory"] = category;
             ViewData["CurrentStatus"] = status;
+
             return View(filteredReports);
         }
 
@@ -133,6 +143,14 @@ namespace CampusPulse.Controllers
 
                 _reportsRepository.CreateReport(report);
 
+                var reportUrl = Url.Action(
+                    nameof(Details),
+                    "Reports",
+                    new { id = report.Id },
+                    Request.Scheme) ?? string.Empty;
+
+                await _notificationService.NotifyInvestigatorsOfNewReportAsync(report, reportUrl);
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -182,7 +200,7 @@ namespace CampusPulse.Controllers
         [Authorize(Roles = UserRoles.Investigator)]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateStatus(int id, string status)
+        public async Task<IActionResult> UpdateStatus(int id, string status)
         {
             var allowedStatuses = new List<string>
             {
@@ -200,13 +218,26 @@ namespace CampusPulse.Controllers
 
             _reportsRepository.UpdateReportStatus(id, status);
 
+            var updatedReport = _reportsRepository.GetReportById(id);
+
+            if (updatedReport != null)
+            {
+                var reportUrl = Url.Action(
+                    nameof(Details),
+                    "Reports",
+                    new { id = updatedReport.Id },
+                    Request.Scheme) ?? string.Empty;
+
+                await _notificationService.NotifyReporterOfStatusChangeAsync(updatedReport, reportUrl);
+            }
+
             return RedirectToAction(nameof(Details), new { id });
         }
 
         [Authorize(Roles = UserRoles.Investigator)]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SaveInvestigation(int id, string actionTaken, string? investigatorPhone)
+        public async Task<IActionResult> SaveInvestigation(int id, string actionTaken, string? investigatorPhone)
         {
             if (string.IsNullOrWhiteSpace(actionTaken))
             {
@@ -224,6 +255,19 @@ namespace CampusPulse.Controllers
                 investigatorEmail,
                 investigatorPhone
             );
+
+            var updatedReport = _reportsRepository.GetReportById(id);
+
+            if (updatedReport != null)
+            {
+                var reportUrl = Url.Action(
+                    nameof(Details),
+                    "Reports",
+                    new { id = updatedReport.Id },
+                    Request.Scheme) ?? string.Empty;
+
+                await _notificationService.NotifyReporterOfInvestigationUpdateAsync(updatedReport, reportUrl);
+            }
 
             return RedirectToAction(nameof(Details), new { id });
         }
