@@ -64,7 +64,10 @@
             {
                 <hr />
                 <h5>Image</h5>
-                <img src="@Model.Report.ImageUrl" alt="Report image" class="img-fluid rounded" />
+                <img src="@Model.Report.ImageUrl"
+                     alt="Report image"
+                     class="img-fluid rounded border"
+                     style="max-height: 500px; object-fit: contain;" />
             }
 
             <hr />
@@ -94,6 +97,7 @@
                 <p>@Model.Report.Investigation.ActionTaken</p>
 
                 <p><strong>Date of Action:</strong> @Model.Report.Investigation.ActionDate.ToString("dd MMM yyyy HH:mm")</p>
+
                 <p>
                     <strong>Investigator:</strong>
                     @(Model.Report.Investigation.Investigator?.DisplayName ?? "Deleted investigator")
@@ -112,6 +116,43 @@
             No investigation update has been added yet.
         </div>
     }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h4 class="mb-0">Activity Timeline</h4>
+        </div>
+
+        <div class="card-body">
+            @if (Model.Report.Activities != null && Model.Report.Activities.Any())
+            {
+                <ul class="list-group list-group-flush">
+                    @foreach (var activity in Model.Report.Activities.OrderByDescending(a => a.CreatedAtUtc))
+                    {
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between gap-3">
+                                <strong>@activity.ActionType</strong>
+                                <small class="text-muted text-nowrap">
+                                    @activity.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                                </small>
+                            </div>
+
+                            <div>@activity.Description</div>
+
+                            <small class="text-muted">
+                                By @activity.ActorDisplayName
+                            </small>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="text-muted mb-0">
+                    No activity has been recorded for this report yet.
+                </p>
+            }
+        </div>
+    </div>
 
     @if (!Model.IsAuthenticated)
     {

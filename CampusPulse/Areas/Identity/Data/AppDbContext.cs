@@ -16,10 +16,29 @@ namespace CampusPulse.Data
         public DbSet<Investigation> Investigations { get; set; }
         public DbSet<ReportUpvote> ReportUpvotes { get; set; }
         public DbSet<InvestigatorEmail> InvestigatorEmails { get; set; }
+        public DbSet<ReportActivity> ReportActivities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<ReportActivity>()
+                .HasOne(a => a.Report)
+                .WithMany(r => r.Activities)
+                .HasForeignKey(a => a.ReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ReportActivity>()
+                .Property(a => a.ActionType)
+                .HasMaxLength(50);
+
+            builder.Entity<ReportActivity>()
+                .Property(a => a.Description)
+                .HasMaxLength(500);
+
+            builder.Entity<ReportActivity>()
+                .Property(a => a.ActorDisplayName)
+                .HasMaxLength(100);
 
             builder.Entity<Report>()
                 .HasOne(r => r.Reporter)

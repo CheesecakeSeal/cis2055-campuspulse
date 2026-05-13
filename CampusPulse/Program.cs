@@ -65,9 +65,9 @@ builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 builder.Services.AddScoped<IUserDataService, UserDataService>();
 builder.Services.AddScoped<IClaimsTransformation, InvestigatorRoleClaimsTransformation>();
+builder.Services.AddScoped<IReportActivityService, ReportActivityService>();
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
-
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<ICampusPulseNotificationService, CampusPulseNotificationService>();
 

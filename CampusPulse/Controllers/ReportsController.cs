@@ -14,17 +14,20 @@ namespace CampusPulse.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IImageUploadService _imageUploadService;
         private readonly ICampusPulseNotificationService _notificationService;
+        private readonly IReportActivityService _activityService;
 
         public ReportsController(
             IReportsRepository reportsRepository,
             UserManager<ApplicationUser> userManager,
             IImageUploadService imageUploadService,
-            ICampusPulseNotificationService notificationService)
+            ICampusPulseNotificationService notificationService,
+            IReportActivityService activityService)
         {
             _reportsRepository = reportsRepository;
             _userManager = userManager;
             _imageUploadService = imageUploadService;
             _notificationService = notificationService;
+            _activityService = activityService;
         }
 
         public IActionResult Index(string searchString, string location, string category, string status)
@@ -143,6 +146,15 @@ namespace CampusPulse.Controllers
 
                 _reportsRepository.CreateReport(report);
 
+                var actor = await GetCurrentActorAsync();
+
+                await _activityService.LogAsync(
+                    report.Id,
+                    "Created",
+                    "Report was submitted.",
+                    actor.UserId,
+                    actor.DisplayName);
+
                 var reportUrl = Url.Action(
                     nameof(Details),
                     "Reports",
@@ -202,6 +214,15 @@ namespace CampusPulse.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int id, string status)
         {
+            var existingReport = _reportsRepository.GetReportById(id);
+
+            if (existingReport == null)
+            {
+                return NotFound();
+            }
+
+            var oldStatus = existingReport.Status;
+
             var allowedStatuses = new List<string>
             {
                 "Open",
@@ -216,7 +237,21 @@ namespace CampusPulse.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
 
+            if (oldStatus == status)
+            {
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
             _reportsRepository.UpdateReportStatus(id, status);
+
+            var actor = await GetCurrentActorAsync();
+
+            await _activityService.LogAsync(
+                id,
+                "Status Updated",
+                $"Status changed from '{oldStatus}' to '{status}'.",
+                actor.UserId,
+                actor.DisplayName);
 
             var updatedReport = _reportsRepository.GetReportById(id);
 
@@ -245,6 +280,15 @@ namespace CampusPulse.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
 
+            var reportBeforeUpdate = _reportsRepository.GetReportById(id);
+
+            if (reportBeforeUpdate == null)
+            {
+                return NotFound();
+            }
+
+            var hadInvestigation = reportBeforeUpdate.Investigation != null;
+
             var investigatorId = _userManager.GetUserId(User) ?? string.Empty;
             var investigatorEmail = User.Identity?.Name ?? string.Empty;
 
@@ -255,6 +299,17 @@ namespace CampusPulse.Controllers
                 investigatorEmail,
                 investigatorPhone
             );
+
+            var actor = await GetCurrentActorAsync();
+
+            await _activityService.LogAsync(
+                id,
+                hadInvestigation ? "Investigation Updated" : "Investigation Added",
+                hadInvestigation
+                    ? "Investigation details were updated."
+                    : "An investigation entry was added.",
+                actor.UserId,
+                actor.DisplayName);
 
             var updatedReport = _reportsRepository.GetReportById(id);
 
@@ -344,6 +399,15 @@ namespace CampusPulse.Controllers
 
                 _reportsRepository.UpdateReport(existingReport);
 
+                var actor = await GetCurrentActorAsync();
+
+                await _activityService.LogAsync(
+                    existingReport.Id,
+                    "Edited",
+                    "Report details were edited.",
+                    actor.UserId,
+                    actor.DisplayName);
+
                 return RedirectToAction(nameof(Details), new { id = existingReport.Id });
             }
 
@@ -406,6 +470,18 @@ namespace CampusPulse.Controllers
                    && !string.IsNullOrWhiteSpace(report.ReporterId)
                    && report.ReporterId == currentUserId
                    && !User.IsInRole(UserRoles.Investigator);
+        }
+
+        private async Task<(string? UserId, string DisplayName)> GetCurrentActorAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return (null, "Unknown user");
+            }
+
+            return (user.Id, user.DisplayName ?? user.UserName ?? "Unknown user");
         }
     }
 }

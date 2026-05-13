@@ -40,5 +40,6 @@ namespace CampusPulse.Models
         public virtual Investigation? Investigation { get; set; }
 
         public virtual ICollection<ReportUpvote> ReportUpvotes { get; set; } = new List<ReportUpvote>();
+        public virtual ICollection<ReportActivity> Activities { get; set; } = new List<ReportActivity>();
     }
 }

@@ -29,6 +29,7 @@ namespace CampusPulse.Models.Repositories
                 .Include(r => r.Reporter)
                 .Include(r => r.Investigation)
                     .ThenInclude(i => i.Investigator)
+                .Include(r => r.Activities)
                 .FirstOrDefault(r => r.Id == id);
         }
 
