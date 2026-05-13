@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using CampusPulse.Models;
 
 namespace CampusPulse.Services
 {
     public interface IUserDataService
     {
-        Task<object> BuildPersonalDataExportAsync(IdentityUser user);
-        Task DeleteOrAnonymiseUserDataAsync(IdentityUser user);
+        Task<object> BuildPersonalDataExportAsync(ApplicationUser user);
+        Task DeleteOrAnonymiseUserDataAsync(ApplicationUser user);
     }
 }

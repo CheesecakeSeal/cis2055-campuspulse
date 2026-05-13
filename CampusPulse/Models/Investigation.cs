@@ -19,5 +19,9 @@ namespace CampusPulse.Models
         public string? InvestigatorPhone { get; set; }
 
         public virtual Report Report { get; set; }
+
+        public string? InvestigatorId { get; set; }
+
+        public virtual ApplicationUser? Investigator { get; set; }
     }
 }

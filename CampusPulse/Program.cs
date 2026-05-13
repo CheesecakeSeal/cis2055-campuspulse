@@ -1,7 +1,9 @@
 using CampusPulse.Data;
+using CampusPulse.Models;
 using CampusPulse.Models.Interfaces;
 using CampusPulse.Models.Repositories;
 using CampusPulse.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,12 +20,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     ));
 
 builder.Services
-    .AddDefaultIdentity<IdentityUser>(options =>
+    .AddDefaultIdentity<ApplicationUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
-
         options.User.RequireUniqueEmail = true;
-
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
         options.Password.RequireUppercase = true;
@@ -54,6 +54,7 @@ builder.Services.Configure<FormOptions>(options =>
 builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 builder.Services.AddScoped<IUserDataService, UserDataService>();
+builder.Services.AddScoped<IClaimsTransformation, InvestigatorRoleClaimsTransformation>();
 
 var app = builder.Build();
 

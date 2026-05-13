@@ -1,6 +1,7 @@
 using CampusPulse.Data;
 using CampusPulse.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampusPulse.Controllers
 {
@@ -35,12 +36,19 @@ namespace CampusPulse.Controllers
             var currentYear = DateTime.Now.Year;
 
             var leaderboard = _context.Reports
-                .Where(r => !string.IsNullOrEmpty(r.ReporterEmail)
-                            && r.Date_Reported.Year == currentYear)
-                .GroupBy(r => r.ReporterEmail)
+                .Include(r => r.Reporter)
+                .Where(r => r.Date_Reported.Year == currentYear
+                            && r.ReporterId != null
+                            && r.Reporter != null
+                            && r.Reporter.DisplayName != null)
+                .GroupBy(r => new
+                {
+                    r.ReporterId,
+                    r.Reporter!.DisplayName
+                })
                 .Select(group => new ReporterStatsViewModel
                 {
-                    Email = group.Key,
+                    DisplayName = group.Key.DisplayName!,
                     ReportsSubmitted = group.Count(),
                     TotalUpvotes = group.Sum(r => r.Upvotes)
                 })

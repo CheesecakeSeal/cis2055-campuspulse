@@ -8,7 +8,7 @@ namespace CampusPulse.Services
 {
     public class ImageUploadService : IImageUploadService
     {
-        private const long MaxFileSizeBytes = 3 * 1024 * 1024; // 2 MB
+        private const long MaxFileSizeBytes = 3 * 1024 * 1024;
         private const int MaxImageWidth = 4000;
         private const int MaxImageHeight = 4000;
         private const int MaxOutputWidth = 1600;

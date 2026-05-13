@@ -1,5 +1,5 @@
 ﻿using CampusPulse.Data;
-using Microsoft.AspNetCore.Identity;
+using CampusPulse.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CampusPulse.Services
@@ -17,7 +17,7 @@ namespace CampusPulse.Services
             _imageUploadService = imageUploadService;
         }
 
-        public async Task<object> BuildPersonalDataExportAsync(IdentityUser user)
+        public async Task<object> BuildPersonalDataExportAsync(ApplicationUser user)
         {
             var userId = user.Id;
             var email = user.Email ?? user.UserName ?? string.Empty;
@@ -71,6 +71,7 @@ namespace CampusPulse.Services
                     user.Id,
                     user.UserName,
                     user.Email,
+                    user.DisplayName,
                     user.EmailConfirmed,
                     user.PhoneNumber,
                     user.PhoneNumberConfirmed,
@@ -86,7 +87,7 @@ namespace CampusPulse.Services
             };
         }
 
-        public async Task DeleteOrAnonymiseUserDataAsync(IdentityUser user)
+        public async Task DeleteOrAnonymiseUserDataAsync(ApplicationUser user)
         {
             var userId = user.Id;
             var email = user.Email ?? user.UserName ?? string.Empty;
@@ -128,6 +129,8 @@ namespace CampusPulse.Services
             {
                 investigation.InvestigatorEmail = "Deleted investigator";
                 investigation.InvestigatorPhone = null;
+
+                investigation.InvestigatorId = null;
             }
 
             await _context.SaveChangesAsync();

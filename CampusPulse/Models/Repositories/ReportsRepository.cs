@@ -16,7 +16,9 @@ namespace CampusPulse.Models.Repositories
         public IEnumerable<Report> GetAllReports()
         {
             return _appDbContext.Reports
+                .Include(r => r.Reporter)
                 .Include(r => r.Investigation)
+                    .ThenInclude(i => i.Investigator)
                 .OrderByDescending(r => r.Date_Reported)
                 .ToList();
         }
@@ -24,7 +26,9 @@ namespace CampusPulse.Models.Repositories
         public Report? GetReportById(int id)
         {
             return _appDbContext.Reports
+                .Include(r => r.Reporter)
                 .Include(r => r.Investigation)
+                    .ThenInclude(i => i.Investigator)
                 .FirstOrDefault(r => r.Id == id);
         }
 
@@ -118,6 +122,7 @@ namespace CampusPulse.Models.Repositories
         public void AddOrUpdateInvestigation(
             int reportId,
             string actionTaken,
+            string investigatorId,
             string investigatorEmail,
             string? investigatorPhone)
         {
@@ -137,6 +142,7 @@ namespace CampusPulse.Models.Repositories
                     ReportId = reportId,
                     ActionTaken = actionTaken,
                     ActionDate = DateTime.Now,
+                    InvestigatorId = investigatorId,
                     InvestigatorEmail = investigatorEmail,
                     InvestigatorPhone = investigatorPhone
                 };
@@ -147,6 +153,7 @@ namespace CampusPulse.Models.Repositories
             {
                 report.Investigation.ActionTaken = actionTaken;
                 report.Investigation.ActionDate = DateTime.Now;
+                report.Investigation.InvestigatorId = investigatorId;
                 report.Investigation.InvestigatorEmail = investigatorEmail;
                 report.Investigation.InvestigatorPhone = investigatorPhone;
             }

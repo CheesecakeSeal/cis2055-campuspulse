@@ -1,4 +1,5 @@
 ﻿using CampusPulse.Services;
+using CampusPulse.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,13 +11,13 @@ namespace CampusPulse.Controllers
     [Authorize]
     public class PersonalDataController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IUserDataService _userDataService;
 
         public PersonalDataController(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
             IUserDataService userDataService)
         {
             _userManager = userManager;

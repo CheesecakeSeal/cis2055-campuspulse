@@ -27,6 +27,8 @@ namespace CampusPulse.Models
 
         public string? ReporterId { get; set; }
 
+        public virtual ApplicationUser? Reporter { get; set; }
+
         public string ReporterEmail { get; set; } = string.Empty;
 
         public string? ReporterPhone { get; set; }

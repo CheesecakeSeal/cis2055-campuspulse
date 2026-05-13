@@ -14,6 +14,7 @@
         void AddOrUpdateInvestigation(
             int reportId,
             string actionTaken,
+            string investigatorId,
             string investigatorEmail,
             string? investigatorPhone
         );

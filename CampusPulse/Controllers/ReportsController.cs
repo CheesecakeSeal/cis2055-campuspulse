@@ -11,12 +11,12 @@ namespace CampusPulse.Controllers
     public class ReportsController : Controller
     {
         private readonly IReportsRepository _reportsRepository;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IImageUploadService _imageUploadService;
 
         public ReportsController(
             IReportsRepository reportsRepository,
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             IImageUploadService imageUploadService)
         {
             _reportsRepository = reportsRepository;
@@ -71,16 +71,21 @@ namespace CampusPulse.Controllers
                 return NotFound();
             }
 
-            var currentUserId = _userManager.GetUserId(User);
+            var isAuthenticated = User.Identity?.IsAuthenticated == true;
+            var currentUserId = isAuthenticated ? _userManager.GetUserId(User) : null;
 
             var viewModel = new ReportDetailsViewModel
             {
                 Report = report,
-                IsAuthenticated = User.Identity?.IsAuthenticated == true,
-                IsOwner = report.ReporterId == currentUserId,
+                IsAuthenticated = isAuthenticated,
+                IsOwner = isAuthenticated
+                          && !string.IsNullOrWhiteSpace(currentUserId)
+                          && !string.IsNullOrWhiteSpace(report.ReporterId)
+                          && report.ReporterId == currentUserId,
                 IsInvestigator = User.IsInRole(UserRoles.Investigator),
-                HasUpvoted = currentUserId != null &&
-                             _reportsRepository.HasUserUpvotedReport(id, currentUserId)
+                HasUpvoted = isAuthenticated
+                             && !string.IsNullOrWhiteSpace(currentUserId)
+                             && _reportsRepository.HasUserUpvotedReport(id, currentUserId)
             };
 
             return View(viewModel);
@@ -209,11 +214,13 @@ namespace CampusPulse.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
 
+            var investigatorId = _userManager.GetUserId(User) ?? string.Empty;
             var investigatorEmail = User.Identity?.Name ?? string.Empty;
 
             _reportsRepository.AddOrUpdateInvestigation(
                 id,
                 actionTaken,
+                investigatorId,
                 investigatorEmail,
                 investigatorPhone
             );
@@ -344,9 +351,15 @@ namespace CampusPulse.Controllers
 
         private bool UserCanManageReport(Report report)
         {
+            if (User.Identity?.IsAuthenticated != true)
+            {
+                return false;
+            }
+
             var currentUserId = _userManager.GetUserId(User);
 
-            return User.Identity?.IsAuthenticated == true
+            return !string.IsNullOrWhiteSpace(currentUserId)
+                   && !string.IsNullOrWhiteSpace(report.ReporterId)
                    && report.ReporterId == currentUserId
                    && !User.IsInRole(UserRoles.Investigator);
         }

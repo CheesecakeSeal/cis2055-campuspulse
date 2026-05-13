@@ -70,7 +70,10 @@
             <hr />
 
             <h5>Reporter Details</h5>
-            <p><strong>Email:</strong> @Model.Report.ReporterEmail</p>
+            <p>
+                <strong>Reporter:</strong>
+                @(Model.Report.Reporter?.DisplayName ?? "Deleted user")
+            </p>
 
             @if (!string.IsNullOrWhiteSpace(Model.Report.ReporterPhone))
             {
@@ -91,7 +94,10 @@
                 <p>@Model.Report.Investigation.ActionTaken</p>
 
                 <p><strong>Date of Action:</strong> @Model.Report.Investigation.ActionDate.ToString("dd MMM yyyy HH:mm")</p>
-                <p><strong>Investigator Email:</strong> @Model.Report.Investigation.InvestigatorEmail</p>
+                <p>
+                    <strong>Investigator:</strong>
+                    @(Model.Report.Investigation.Investigator?.DisplayName ?? "Deleted investigator")
+                </p>
 
                 @if (!string.IsNullOrWhiteSpace(Model.Report.Investigation.InvestigatorPhone))
                 {
