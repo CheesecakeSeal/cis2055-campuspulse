@@ -16,7 +16,31 @@ If dotnet ef is not installed:
 dotnet tool install --global dotnet-ef --version 9.0.12
 ```
 
-### Investigator Account
+## Creating an Investigator Account
 
-- Email: investigator@campuspulse.local
-- Password: Investigator123!
+For security reasons, the application does not include a default investigator account or hardcoded investigator password.
+
+To create an investigator account:
+
+1. Run the application once so the database is created.
+2. Register a normal account using the email address that should become an investigator.
+3. Open SQL Server Management Studio and connect to:
+
+```text
+(localdb)\MSSQLLocalDB
+```
+
+4. Select the CampusPulse database.
+5. Run this query, adding in whatever email address you wish in place of youremail@exxample.com:
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.InvestigatorEmails
+    WHERE NormalizedEmail = UPPER('youremail@exxample.com')
+)
+BEGIN
+    INSERT INTO dbo.InvestigatorEmails (Email, NormalizedEmail)
+    VALUES ('youremail@exxample.com', UPPER('youremail@exxample.com'));
+END
+
+6. Log out and log back in with that account.
