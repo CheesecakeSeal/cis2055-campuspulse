@@ -33,14 +33,16 @@ To create an investigator account:
 4. Select the CampusPulse database.
 5. Run this query, adding in whatever email address you wish in place of youremail@exxample.com:
 
-IF NOT EXISTS (
-    SELECT 1
-    FROM dbo.InvestigatorEmails
-    WHERE NormalizedEmail = UPPER('youremail@exxample.com')
-)
-BEGIN
-    INSERT INTO dbo.InvestigatorEmails (Email, NormalizedEmail)
-    VALUES ('youremail@exxample.com', UPPER('youremail@exxample.com'));
-END
+```sql
+   IF NOT EXISTS (
+       SELECT 1
+       FROM dbo.InvestigatorEmails
+       WHERE NormalizedEmail = UPPER('youremail@example.com')
+   )
+   BEGIN
+       INSERT INTO dbo.InvestigatorEmails (Email, NormalizedEmail)
+       VALUES ('youremail@example.com', UPPER('youremail@example.com'));
+   END
+   ```
 
 6. Log out and log back in with that account.
