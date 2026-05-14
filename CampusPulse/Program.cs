@@ -15,6 +15,7 @@ builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
 });
+
 builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -51,7 +52,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 
     options.LoginPath = "/Identity/Account/Login";
     options.LogoutPath = "/Identity/Account/Logout";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+
+    // Use our custom access denied page instead of the default Identity one.
+    options.AccessDeniedPath = "/Home/AccessDenied";
 });
 
 builder.Services.Configure<FormOptions>(options =>
@@ -66,8 +69,10 @@ builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 builder.Services.AddScoped<IUserDataService, UserDataService>();
 builder.Services.AddScoped<IClaimsTransformation, InvestigatorRoleClaimsTransformation>();
 builder.Services.AddScoped<IReportActivityService, ReportActivityService>();
+
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
+
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<ICampusPulseNotificationService, CampusPulseNotificationService>();
 
@@ -88,6 +93,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.UseStatusCodePagesWithReExecute("/Home/StatusCode", "?code={0}");
 
 app.UseHttpsRedirection();
 app.UseRouting();

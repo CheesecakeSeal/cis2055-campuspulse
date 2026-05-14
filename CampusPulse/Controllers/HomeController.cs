@@ -58,5 +58,29 @@ namespace CampusPulse.Controllers
 
             return View(leaderboard);
         }
+
+        public IActionResult StatusCode(int code)
+        {
+            Response.StatusCode = code;
+
+            ViewData["StatusCode"] = code;
+
+            return View();
+        }
+
+        public IActionResult AccessDenied()
+        {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+            return View();
+        }
     }
 }
