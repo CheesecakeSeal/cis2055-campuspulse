@@ -37,8 +37,7 @@ namespace CampusPulse.Controllers
             if (!string.IsNullOrEmpty(searchString))
             {
                 reports = reports
-                    .Where(r => r.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase)
-                             || r.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    .Where(r => r.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
 
