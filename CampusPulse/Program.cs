@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Automatically validates anti-forgery tokens on unsafe HTTP methods such as POST.
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
@@ -46,21 +47,21 @@ builder.Services
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    // HttpOnly prevents client-side JavaScript injections
     options.Cookie.HttpOnly = true;
+
     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
     options.SlidingExpiration = true;
 
     options.LoginPath = "/Identity/Account/Login";
     options.LogoutPath = "/Identity/Account/Logout";
-
-    // Use our custom access denied page instead of the default Identity one.
     options.AccessDeniedPath = "/Home/AccessDenied";
 });
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    // Allows the request to reach the controller so a validation error can be shown.
-    // The real accepted image size is still enforced by ImageUploadService.
+    // Allows oversized upload attempts to reach controller validation instead of immediately failing
+    // with a generic 400 error. The actual accepted image size is enforced by ImageUploadService.
     options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
 });
 
@@ -70,6 +71,7 @@ builder.Services.AddScoped<IUserDataService, UserDataService>();
 builder.Services.AddScoped<IClaimsTransformation, InvestigatorRoleClaimsTransformation>();
 builder.Services.AddScoped<IReportActivityService, ReportActivityService>();
 
+// Email credentials are loaded from configuration/User Secrets. Please check the readme for more info
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 
@@ -82,9 +84,11 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
+    // Applying migrations on startup for easier setup
     var dbContext = services.GetRequiredService<AppDbContext>();
     await dbContext.Database.MigrateAsync();
 
+    // Seeds roles
     await IdentitySeeder.SeedAsync(services);
 }
 
@@ -94,6 +98,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Re-executes status-code errors such as 404 through a custom page.
 app.UseStatusCodePagesWithReExecute("/Home/StatusCode", "?code={0}");
 
 app.UseHttpsRedirection();

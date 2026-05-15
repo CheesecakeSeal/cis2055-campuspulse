@@ -22,6 +22,8 @@ namespace CampusPulse.Services
             var userId = user.Id;
             var email = user.Email ?? user.UserName ?? string.Empty;
 
+            // Export custom CampusPulse data as well as Identity account data.
+            // This ensures reports, upvotes, and investigation entries are included in the user's data download.
             var submittedReports = await _context.Reports
                 .Where(r => r.ReporterId == userId || r.ReporterEmail == email)
                 .Select(r => new
@@ -98,10 +100,12 @@ namespace CampusPulse.Services
 
             foreach (var report in submittedReports)
             {
+                // Uploaded images may contain personal data, so they are removed during account deletion.
                 _imageUploadService.DeleteImage(report.ImageUrl);
 
+                // Reports are anonymised rather than deleted so campus issue history is preserved.
                 report.ReporterId = null;
-                report.ReporterEmail = "Deleted user";
+                report.ReporterEmail = "Deleted User";
                 report.ReporterPhone = null;
                 report.ImageUrl = null;
             }
@@ -113,6 +117,7 @@ namespace CampusPulse.Services
 
             foreach (var upvote in userUpvotes)
             {
+                // Keep the stored upvote counter consistent when removing the user's upvote records.
                 if (upvote.Report.Upvotes > 0)
                 {
                     upvote.Report.Upvotes--;
@@ -127,9 +132,9 @@ namespace CampusPulse.Services
 
             foreach (var investigation in investigations)
             {
-                investigation.InvestigatorEmail = "Deleted investigator";
+                // Investigation records remain, but personal investigator details are removed.
+                investigation.InvestigatorEmail = "Deleted Investigator";
                 investigation.InvestigatorPhone = null;
-
                 investigation.InvestigatorId = null;
             }
 

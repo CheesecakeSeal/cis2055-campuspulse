@@ -88,6 +88,8 @@ namespace CampusPulse.Models.Repositories
                     CreatedAt = DateTime.Now
                 };
 
+                // The ReportUpvotes table records the user's vote, while the counter is kept
+                // on Report for faster display on listing pages.
                 _appDbContext.ReportUpvotes.Add(upvote);
                 report.Upvotes++;
                 _appDbContext.SaveChanges();
@@ -97,6 +99,7 @@ namespace CampusPulse.Models.Repositories
 
             _appDbContext.ReportUpvotes.Remove(existingUpvote);
 
+            // Guard against negative counters if data has somehow become inconsistent.
             if (report.Upvotes > 0)
             {
                 report.Upvotes--;
@@ -138,6 +141,8 @@ namespace CampusPulse.Models.Repositories
 
             if (report.Investigation == null)
             {
+                // Each report has at most one investigation entry.
+                // If no entry exists yet, create the initial investigation record.
                 var investigation = new Investigation
                 {
                     ReportId = reportId,
@@ -152,6 +157,7 @@ namespace CampusPulse.Models.Repositories
             }
             else
             {
+                // If an investigation already exists, update it instead of creating duplicates.
                 report.Investigation.ActionTaken = actionTaken;
                 report.Investigation.ActionDate = DateTime.Now;
                 report.Investigation.InvestigatorId = investigatorId;
