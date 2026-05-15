@@ -37,6 +37,7 @@ namespace CampusPulse.Services
 
                 var subject = $"New CampusPulse report: {report.Title}";
 
+                // User-submitted values are HTML-encoded before being inserted into email HTML.
                 var body = $@"
                     <h2>New CampusPulse Report Submitted</h2>
                     <p>A new report has been submitted and is awaiting review.</p>
@@ -56,6 +57,7 @@ namespace CampusPulse.Services
             }
             catch (Exception ex)
             {
+                // Email failure should not block the report workflow from completing.
                 _logger.LogError(ex, "Failed to send new report notification for report {ReportId}.", report.Id);
             }
         }
@@ -64,6 +66,7 @@ namespace CampusPulse.Services
         {
             try
             {
+                // Anonymised/deleted users should not receive notification emails.
                 if (!IsValidRecipient(report.ReporterEmail))
                 {
                     _logger.LogInformation("Status notification skipped because report {ReportId} has no valid reporter email.", report.Id);
@@ -93,6 +96,7 @@ namespace CampusPulse.Services
             }
             catch (Exception ex)
             {
+                // Email failure should be logged.
                 _logger.LogError(ex, "Failed to send status update notification for report {ReportId}.", report.Id);
             }
         }
@@ -101,6 +105,7 @@ namespace CampusPulse.Services
         {
             try
             {
+                // Anonymised/deleted users should not receive notification emails.
                 if (!IsValidRecipient(report.ReporterEmail))
                 {
                     _logger.LogInformation("Investigation notification skipped because report {ReportId} has no valid reporter email.", report.Id);
@@ -133,12 +138,14 @@ namespace CampusPulse.Services
             }
             catch (Exception ex)
             {
+                // Email failure should be logged.
                 _logger.LogError(ex, "Failed to send investigation update notification for report {ReportId}.", report.Id);
             }
         }
 
         private static string Html(string? value)
         {
+            // Central helper so every user-controlled value in email HTML is encoded consistently.
             return WebUtility.HtmlEncode(value ?? string.Empty);
         }
 

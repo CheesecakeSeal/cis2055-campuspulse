@@ -1,5 +1,4 @@
 ﻿using CampusPulse.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +21,8 @@ namespace CampusPulse.Data
         {
             base.OnModelCreating(builder);
 
+            // ReportActivity stores an audit-style timeline of important changes.
+            // If a report is deleted, its activity log is deleted with it.
             builder.Entity<ReportActivity>()
                 .HasOne(a => a.Report)
                 .WithMany(r => r.Activities)
@@ -40,33 +41,42 @@ namespace CampusPulse.Data
                 .Property(a => a.ActorDisplayName)
                 .HasMaxLength(100);
 
+            // Reports keep a link to the user who submitted them.
+            // SetNull preserves the report if the user account is deleted/anonymised.
             builder.Entity<Report>()
                 .HasOne(r => r.Reporter)
                 .WithMany()
                 .HasForeignKey(r => r.ReporterId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Investigations keep a link to the investigator who last updated them.
+            // SetNull prevents investigation history being deleted with the account.
             builder.Entity<Investigation>()
                 .HasOne(i => i.Investigator)
                 .WithMany()
                 .HasForeignKey(i => i.InvestigatorId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Public display names must be unique when present.
+            // Existing/null users are allowed so older accounts do not break during migration.
             builder.Entity<ApplicationUser>()
-            .HasIndex(u => u.NormalizedDisplayName)
-            .IsUnique()
-            .HasFilter("[NormalizedDisplayName] IS NOT NULL");
+                .HasIndex(u => u.NormalizedDisplayName)
+                .IsUnique()
+                .HasFilter("[NormalizedDisplayName] IS NOT NULL");
 
+            // Investigator access is controlled through an email allowlist
             builder.Entity<InvestigatorEmail>()
                 .HasIndex(i => i.NormalizedEmail)
                 .IsUnique();
 
+            // One report can have at most one investigation entry.
             builder.Entity<Report>()
                 .HasOne(r => r.Investigation)
                 .WithOne(i => i.Report)
                 .HasForeignKey<Investigation>(i => i.ReportId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Report defaults.
             builder.Entity<Report>()
                 .Property(r => r.Status)
                 .HasDefaultValue("Open");
@@ -75,6 +85,7 @@ namespace CampusPulse.Data
                 .Property(r => r.Upvotes)
                 .HasDefaultValue(0);
 
+            // Composite key ensures a user can only upvote the same report once.
             builder.Entity<ReportUpvote>()
                 .HasKey(ru => new { ru.ReportId, ru.UserId });
 

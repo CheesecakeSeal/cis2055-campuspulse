@@ -91,11 +91,16 @@ namespace CampusPulse.Controllers
             {
                 Report = report,
                 IsAuthenticated = isAuthenticated,
+
+                // A user only owns a report if both IDs exist and match.
+                // This prevents anonymised reports with null ReporterId from being treated as owned by anonymous users.
                 IsOwner = isAuthenticated
                           && !string.IsNullOrWhiteSpace(currentUserId)
                           && !string.IsNullOrWhiteSpace(report.ReporterId)
                           && report.ReporterId == currentUserId,
+
                 IsInvestigator = User.IsInRole(UserRoles.Investigator),
+
                 HasUpvoted = isAuthenticated
                              && !string.IsNullOrWhiteSpace(currentUserId)
                              && _reportsRepository.HasUserUpvotedReport(id, currentUserId)
@@ -121,6 +126,7 @@ namespace CampusPulse.Controllers
             report.ReporterId = _userManager.GetUserId(User);
             report.ReporterEmail = User.Identity?.Name ?? string.Empty;
 
+            // These fields are assigned server-side and should not be supplied by the browser.
             ModelState.Remove(nameof(Report.ReporterId));
             ModelState.Remove(nameof(Report.ReporterEmail));
             ModelState.Remove(nameof(Report.ImageUrl));
@@ -144,6 +150,7 @@ namespace CampusPulse.Controllers
                 report.Status = "Open";
                 report.Upvotes = 0;
 
+                // Save first so the generated report Id can be used in activity logs and notification links.
                 _reportsRepository.CreateReport(report);
 
                 var actor = await GetCurrentActorAsync();
@@ -231,6 +238,7 @@ namespace CampusPulse.Controllers
                 "No Action Required"
             };
 
+            // Only allow known statuses
             if (!allowedStatuses.Contains(status))
             {
                 TempData["ErrorMessage"] = "Invalid status selected.";
@@ -246,6 +254,7 @@ namespace CampusPulse.Controllers
 
             var actor = await GetCurrentActorAsync();
 
+            // Record a timeline entry and notify the reporter after the investigator changes status.
             await _activityService.LogAsync(
                 id,
                 "Status Updated",

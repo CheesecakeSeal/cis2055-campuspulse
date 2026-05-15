@@ -23,6 +23,7 @@ namespace CampusPulse.Services
             string subject,
             string htmlBody)
         {
+            // Remove empty addresses and avoid sending duplicate emails to the same recipient.
             var recipientList = recipients
                 .Where(email => !string.IsNullOrWhiteSpace(email))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -34,6 +35,7 @@ namespace CampusPulse.Services
                 return;
             }
 
+            // Email can be disabled in appsettings.json so the site still runs without SMTP credentials.
             if (!_settings.Enabled)
             {
                 _logger.LogInformation(
@@ -44,6 +46,7 @@ namespace CampusPulse.Services
                 return;
             }
 
+            // SMTP credentials comes from configuration/User Secrets
             if (string.IsNullOrWhiteSpace(_settings.SmtpHost) ||
                 string.IsNullOrWhiteSpace(_settings.Username) ||
                 string.IsNullOrWhiteSpace(_settings.Password))

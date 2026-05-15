@@ -78,8 +78,20 @@ namespace CampusPulse.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                var email = Input.Email.Trim();
+                var normalizedEmail = email.ToUpperInvariant();
+
                 var displayName = Input.DisplayName.Trim();
                 var normalizedDisplayName = displayName.ToUpperInvariant();
+
+                var emailExists = await _userManager.Users
+                    .AnyAsync(u => u.NormalizedEmail == normalizedEmail);
+
+                if (emailExists)
+                {
+                    ModelState.AddModelError("Input.Email", "An account with this email address already exists.");
+                    return Page();
+                }
 
                 var displayNameExists = await _userManager.Users
                     .AnyAsync(u => u.NormalizedDisplayName == normalizedDisplayName);
@@ -92,14 +104,15 @@ namespace CampusPulse.Areas.Identity.Pages.Account
 
                 var user = new ApplicationUser
                 {
-                    UserName = Input.Email,
-                    Email = Input.Email,
+                    UserName = email,
+                    Email = email,
                     DisplayName = displayName,
-                    NormalizedDisplayName = normalizedDisplayName
+                    NormalizedDisplayName = normalizedDisplayName,
+                    LockoutEnabled = true
                 };
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                await _userStore.SetUserNameAsync(user, email, CancellationToken.None);
+                await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
