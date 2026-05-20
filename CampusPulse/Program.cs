@@ -11,6 +11,24 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Logging providers are configured explicitly so the project logs useful application/security events
+// without being flooded by low-value framework logs.
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+if (OperatingSystem.IsWindows())
+{
+    builder.Logging.AddEventLog(settings =>
+    {
+        settings.SourceName = "CampusPulse";
+    });
+}
+
+builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
+builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+builder.Logging.AddFilter("CampusPulse", LogLevel.Information);
+
 // Automatically validates anti-forgery tokens on unsafe HTTP methods such as POST.
 builder.Services.AddControllersWithViews(options =>
 {
@@ -47,7 +65,7 @@ builder.Services
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    // HttpOnly prevents client-side JavaScript injections
+    // HttpOnly prevents JavaScript from reading the authentication cookie.
     options.Cookie.HttpOnly = true;
 
     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
@@ -71,7 +89,7 @@ builder.Services.AddScoped<IUserDataService, UserDataService>();
 builder.Services.AddScoped<IClaimsTransformation, InvestigatorRoleClaimsTransformation>();
 builder.Services.AddScoped<IReportActivityService, ReportActivityService>();
 
-// Email credentials are loaded from configuration/User Secrets. Please check the readme for more info
+// Email credentials are loaded from configuration/User Secrets. Please check the README for setup details.
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 
@@ -84,22 +102,24 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    // Applying migrations on startup for easier setup
+    // Applying migrations on startup for easier setup.
     var dbContext = services.GetRequiredService<AppDbContext>();
     await dbContext.Database.MigrateAsync();
 
-    // Seeds roles
+    // Seeds roles only, not privileged users or passwords.
     await IdentitySeeder.SeedAsync(services);
 }
 
+// Use the friendly error page so users do not see developer exception details.
+app.UseExceptionHandler("/Home/Error");
+
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
 // Re-executes status-code errors such as 404 through a custom page.
-app.UseStatusCodePagesWithReExecute("/Home/StatusCode", "?code={0}");
+app.UseStatusCodePagesWithReExecute("/Home/StatusCodePage", "?code={0}");
 
 app.UseHttpsRedirection();
 app.UseRouting();
