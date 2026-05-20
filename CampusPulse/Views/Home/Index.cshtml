@@ -1,50 +1,115 @@
 ﻿@model IEnumerable<CampusPulse.Models.Report>
-<div class="container mt-4">
-    <div class="hero text-center text-white p-5 rounded-3 mb-4" style="background-color: #002147;">
-        <h1 class="fw-bold">CampusPulse</h1>
-        <p class="mb-0">Report issues impacting safety and accessibility on campus</p>
+
+@{
+    ViewData["Title"] = "Home";
+}
+
+@functions {
+    private string GetStatusClass(string? status)
+    {
+        return status switch
+        {
+            "Open" => "status-open",
+            "Being Investigated" => "status-being-investigated",
+            "Resolved" => "status-resolved",
+            "No Action Required" => "status-no-action-required",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string ShortDescription(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return "No description provided.";
+        }
+
+        return description.Length > 160
+            ? description.Substring(0, 160) + "..."
+            : description;
+    }
+}
+
+<div class="page-shell">
+    <section class="hero-panel">
+        <h1>CampusPulse</h1>
+        <p>Report and track campus issues affecting safety, accessibility, cleanliness, and student life.</p>
+
+        <div class="mt-4 d-flex justify-content-center gap-2 flex-wrap">
+            <a asp-controller="Reports" asp-action="Create" class="btn btn-light">
+                Report an Issue
+            </a>
+
+            <a asp-controller="Reports" asp-action="Index" class="btn btn-outline-light">
+                Browse Issues
+            </a>
+        </div>
+    </section>
+
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="page-title mb-1">Trending Issues</h2>
+            <p class="page-subtitle mb-0">
+                Issues currently receiving the most community attention.
+            </p>
+        </div>
+
+        <a asp-controller="Reports" asp-action="Index" class="btn btn-campus">
+            View All Reports
+        </a>
     </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <h3 class="mb-4">Trending Issues</h3>
-
-            @if (Model != null && Model.Any())
+    @if (Model != null && Model.Any())
+    {
+        <div class="report-list">
+            @foreach (var item in Model)
             {
-                @foreach (var item in Model)
-                {
-                    //Logic to pick the concise class name
-                    string sClass = item.Status switch
-                    {
-                        "Open" => "s-open",
-                        "Being Investigated" => "s-invest",
-                        "Resolved" => "s-done",
-                        "No Action Required" => "s-none",
-                        _ => ""
-                    };
+                <article class="report-card">
+                    <div class="report-card-header">
+                        <div>
+                            <h3 class="report-card-title">@item.Title</h3>
 
-                    <div class="issue-card shadow-sm p-3 mb-3 bg-white rounded-3">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <h5 class="fw-bold mb-1">@item.Title</h5>
-                            <span class="s-badge @sClass">@item.Status</span>
+                            <div class="report-card-meta">
+                                @item.Location / @item.Category
+                            </div>
                         </div>
-                        
-                        <p class="text-muted small mb-2">@item.Location / @item.Category</p>
-                        <p class="mb-3">@item.Description</p>
-                        
-                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                            <span class="fw-bold" style="color: #002147;">@item.Upvotes Upvotes</span>
-                            <a asp-controller="Reports" asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary"> View Pulse → </a>
-                        </div>
+
+                        <span class="badge @GetStatusClass(item.Status)">
+                            @item.Status
+                        </span>
                     </div>
-                }
-            }
-            else
-            {
-                <div class="alert alert-light border shadow-sm">
-                    No reports filed yet.
-                </div>
+
+                    <p class="report-card-description">
+                        @ShortDescription(item.Description)
+                    </p>
+
+                    <div class="report-card-footer">
+                        <span class="fw-bold text-campus">
+                            @item.Upvotes @(item.Upvotes == 1 ? "upvote" : "upvotes")
+                        </span>
+
+                        <a asp-controller="Reports"
+                           asp-action="Details"
+                           asp-route-id="@item.Id"
+                           class="btn btn-primary">
+                            View Details →
+                        </a>
+                    </div>
+                </article>
             }
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="surface p-4 text-center">
+            <h4 class="mb-2">No reports yet</h4>
+            <p class="text-muted mb-3">
+                Be the first to report an issue affecting campus life.
+            </p>
+
+            <a asp-controller="Reports" asp-action="Create" class="btn btn-campus">
+                Report an Issue
+            </a>
+        </div>
+    }
 </div>

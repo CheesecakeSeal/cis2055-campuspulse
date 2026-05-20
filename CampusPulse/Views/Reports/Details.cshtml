@@ -1,9 +1,24 @@
 ﻿@model CampusPulse.Models.ViewModels.ReportDetailsViewModel
+
 @{
     ViewData["Title"] = "Report Details";
 }
 
-<div class="container mt-5">
+@functions {
+    private string GetStatusClass(string? status)
+    {
+        return status switch
+        {
+            "Open" => "status-open",
+            "Being Investigated" => "status-being-investigated",
+            "Resolved" => "status-resolved",
+            "No Action Required" => "status-no-action-required",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+<div class="page-shell">
     @if (TempData["ErrorMessage"] != null)
     {
         <div class="alert alert-danger">
@@ -18,26 +33,74 @@
         </div>
     }
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header text-white" style="background-color: #002147;">
-            <h2 class="mb-0">@Model.Report.Title</h2>
+    <div class="mb-4">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            ← Back to Reports
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-campus">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h2 class="mb-1">@Model.Report.Title</h2>
+                    <p class="mb-0 opacity-75">
+                        @Model.Report.Location / @Model.Report.Category
+                    </p>
+                </div>
+
+                <span class="badge @GetStatusClass(Model.Report.Status)">
+                    @Model.Report.Status
+                </span>
+            </div>
         </div>
 
         <div class="card-body">
-            <p>
-                <strong>Status:</strong>
-                <span class="badge bg-primary">@Model.Report.Status</span>
-            </p>
+            <div class="details-grid">
+                <div class="detail-row">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">@Model.Report.Category</div>
+                </div>
 
-            <p><strong>Category:</strong> @Model.Report.Category</p>
-            <p><strong>Location:</strong> @Model.Report.Location</p>
-            <p><strong>Date Reported:</strong> @Model.Report.Date_Reported.ToString("dd MMM yyyy HH:mm")</p>
-            <p><strong>Date/Time Observed:</strong> @Model.Report.Time_Observed.ToString("dd MMM yyyy HH:mm")</p>
-            <p><strong>Upvotes:</strong> @Model.Report.Upvotes</p>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value">@Model.Report.Location</div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">Date Reported</div>
+                    <div class="detail-value">@Model.Report.Date_Reported.ToString("dd MMM yyyy HH:mm")</div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">Observed</div>
+                    <div class="detail-value">@Model.Report.Time_Observed.ToString("dd MMM yyyy HH:mm")</div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">Upvotes</div>
+                    <div class="detail-value fw-bold text-campus">@Model.Report.Upvotes</div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">Reporter</div>
+                    <div class="detail-value">
+                        @(Model.Report.Reporter?.DisplayName ?? "Deleted user")
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Report.ReporterPhone))
+                {
+                    <div class="detail-row">
+                        <div class="detail-label">Reporter Phone</div>
+                        <div class="detail-value">@Model.Report.ReporterPhone</div>
+                    </div>
+                }
+            </div>
 
             @if (Model.IsAuthenticated && !Model.IsOwner && !Model.IsInvestigator)
             {
-                <form asp-action="Upvote" asp-route-id="@Model.Report.Id" method="post" class="mt-3">
+                <form asp-action="Upvote" asp-route-id="@Model.Report.Id" method="post" class="mt-4">
                     @Html.AntiForgeryToken()
 
                     @if (Model.HasUpvoted)
@@ -54,59 +117,69 @@
                     }
                 </form>
             }
+        </div>
+    </div>
 
-            <hr />
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h4 class="mb-0">Description</h4>
+        </div>
 
-            <h5>Description</h5>
-            <p>@Model.Report.Description</p>
+        <div class="card-body">
+            <p class="mb-0">@Model.Report.Description</p>
+        </div>
+    </div>
 
-            @if (!string.IsNullOrWhiteSpace(Model.Report.ImageUrl))
-            {
-                <hr />
-                <h5>Image</h5>
+    @if (!string.IsNullOrWhiteSpace(Model.Report.ImageUrl))
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h4 class="mb-0">Attached Image</h4>
+            </div>
+
+            <div class="card-body text-center">
                 <img src="@Model.Report.ImageUrl"
                      alt="Report image"
                      class="img-fluid rounded border"
                      style="max-height: 500px; object-fit: contain;" />
-            }
-
-            <hr />
-
-            <h5>Reporter Details</h5>
-            <p>
-                <strong>Reporter:</strong>
-                @(Model.Report.Reporter?.DisplayName ?? "Deleted user")
-            </p>
-
-            @if (!string.IsNullOrWhiteSpace(Model.Report.ReporterPhone))
-            {
-                <p><strong>Phone:</strong> @Model.Report.ReporterPhone</p>
-            }
+            </div>
         </div>
-    </div>
+    }
 
     @if (Model.Report.Investigation != null)
     {
-        <div class="card shadow-sm mb-4">
+        <div class="card mb-4">
             <div class="card-header bg-light">
                 <h4 class="mb-0">Investigation Update</h4>
             </div>
 
             <div class="card-body">
-                <p><strong>Actions Taken:</strong></p>
-                <p>@Model.Report.Investigation.ActionTaken</p>
+                <div class="details-grid">
+                    <div class="detail-row">
+                        <div class="detail-label">Actions Taken</div>
+                        <div class="detail-value">@Model.Report.Investigation.ActionTaken</div>
+                    </div>
 
-                <p><strong>Date of Action:</strong> @Model.Report.Investigation.ActionDate.ToString("dd MMM yyyy HH:mm")</p>
+                    <div class="detail-row">
+                        <div class="detail-label">Date of Action</div>
+                        <div class="detail-value">@Model.Report.Investigation.ActionDate.ToString("dd MMM yyyy HH:mm")</div>
+                    </div>
 
-                <p>
-                    <strong>Investigator:</strong>
-                    @(Model.Report.Investigation.Investigator?.DisplayName ?? "Deleted investigator")
-                </p>
+                    <div class="detail-row">
+                        <div class="detail-label">Investigator</div>
+                        <div class="detail-value">
+                            @(Model.Report.Investigation.Investigator?.DisplayName ?? "Deleted investigator")
+                        </div>
+                    </div>
 
-                @if (!string.IsNullOrWhiteSpace(Model.Report.Investigation.InvestigatorPhone))
-                {
-                    <p><strong>Investigator Phone:</strong> @Model.Report.Investigation.InvestigatorPhone</p>
-                }
+                    @if (!string.IsNullOrWhiteSpace(Model.Report.Investigation.InvestigatorPhone))
+                    {
+                        <div class="detail-row">
+                            <div class="detail-label">Investigator Phone</div>
+                            <div class="detail-value">@Model.Report.Investigation.InvestigatorPhone</div>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     }
@@ -117,7 +190,7 @@
         </div>
     }
 
-    <div class="card shadow-sm mb-4">
+    <div class="card mb-4">
         <div class="card-header bg-light">
             <h4 class="mb-0">Activity Timeline</h4>
         </div>
@@ -125,25 +198,23 @@
         <div class="card-body">
             @if (Model.Report.Activities != null && Model.Report.Activities.Any())
             {
-                <ul class="list-group list-group-flush">
-                    @foreach (var activity in Model.Report.Activities.OrderByDescending(a => a.CreatedAtUtc))
-                    {
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between gap-3">
-                                <strong>@activity.ActionType</strong>
-                                <small class="text-muted text-nowrap">
-                                    @activity.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy HH:mm")
-                                </small>
+                @foreach (var activity in Model.Report.Activities.OrderByDescending(a => a.CreatedAtUtc))
+                {
+                    <div class="timeline-item">
+                        <div class="d-flex justify-content-between gap-3 flex-wrap">
+                            <div class="timeline-title">@activity.ActionType</div>
+                            <div class="timeline-meta">
+                                @activity.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy HH:mm")
                             </div>
+                        </div>
 
-                            <div>@activity.Description</div>
+                        <div>@activity.Description</div>
 
-                            <small class="text-muted">
-                                By @activity.ActorDisplayName
-                            </small>
-                        </li>
-                    }
-                </ul>
+                        <div class="timeline-meta">
+                            By @activity.ActorDisplayName
+                        </div>
+                    </div>
+                }
             }
             else
             {
@@ -163,29 +234,33 @@
 
     @if (Model.IsOwner && !Model.IsInvestigator)
     {
-        <div class="card shadow-sm mb-4">
+        <div class="card mb-4">
             <div class="card-header bg-light">
                 <h4 class="mb-0">Reporter Actions</h4>
             </div>
 
             <div class="card-body">
-                <p>You submitted this report.</p>
+                <p class="text-muted">
+                    You submitted this report. You can edit or delete it below.
+                </p>
 
-                <a asp-action="Edit" asp-route-id="@Model.Report.Id" class="btn btn-warning">
-                    Edit Report
-                </a>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-action="Edit" asp-route-id="@Model.Report.Id" class="btn btn-warning">
+                        Edit Report
+                    </a>
 
-                <a asp-action="Delete" asp-route-id="@Model.Report.Id" class="btn btn-danger">
-                    Delete Report
-                </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Report.Id" class="btn btn-danger">
+                        Delete Report
+                    </a>
+                </div>
             </div>
         </div>
     }
 
     @if (Model.IsInvestigator)
     {
-        <div class="card shadow-sm mb-4">
-            <div class="card-header text-white" style="background-color: #002147;">
+        <div class="card mb-4">
+            <div class="card-header bg-campus">
                 <h4 class="mb-0">Investigator Actions</h4>
             </div>
 
@@ -194,7 +269,7 @@
                     @Html.AntiForgeryToken()
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Update Report Status</label>
+                        <label class="form-label">Update Report Status</label>
                         <select name="status" class="form-select">
                             @foreach (var status in Model.StatusOptions)
                             {
@@ -210,7 +285,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-campus">
                         Save Status
                     </button>
                 </form>
@@ -221,12 +296,12 @@
                     @Html.AntiForgeryToken()
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Actions Taken</label>
+                        <label class="form-label">Actions Taken</label>
                         <textarea name="actionTaken" class="form-control" rows="5">@Model.Report.Investigation?.ActionTaken</textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Optional Investigator Phone</label>
+                        <label class="form-label">Optional Investigator Phone</label>
                         <input name="investigatorPhone"
                                class="form-control"
                                value="@Model.Report.Investigation?.InvestigatorPhone" />
@@ -239,8 +314,4 @@
             </div>
         </div>
     }
-
-    <a asp-action="Index" class="btn btn-secondary">
-        Back to Reports
-    </a>
 </div>

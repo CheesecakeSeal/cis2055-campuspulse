@@ -1,101 +1,164 @@
-﻿
-@model IEnumerable<CampusPulse.Models.Report>
+﻿@model IEnumerable<CampusPulse.Models.Report>
 
 @{
     ViewData["Title"] = "Reports";
+
+    var currentCategory = ViewData["CurrentCategory"]?.ToString();
+    var currentStatus = ViewData["CurrentStatus"]?.ToString();
 }
 
-<div class="container mt-5">
-    <h1 class="mb-4">Submitted Reports</h1>
+@functions {
+    private string GetStatusClass(string? status)
+    {
+        return status switch
+        {
+            "Open" => "status-open",
+            "Being Investigated" => "status-being-investigated",
+            "Resolved" => "status-resolved",
+            "No Action Required" => "status-no-action-required",
+            _ => "bg-secondary"
+        };
+    }
+}
 
-    <form asp-action="Index" method="get" class="shadow-sm p-4 bg-light rounded mb-4">
+<div class="page-shell">
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="page-title mb-1">Submitted Reports</h1>
+            <p class="page-subtitle mb-0">
+                Browse, filter, and review reported campus issues.
+            </p>
+        </div>
+
+        <a asp-action="Create" class="btn btn-campus">
+            Submit New Report
+        </a>
+    </div>
+
+    <form asp-action="Index" method="get" class="surface p-4 mb-4">
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label fw-bold">Search Title</label>
-                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"
-                       class="form-control" placeholder="Title..." />
+                <label class="form-label">Search Title</label>
+                <input type="text"
+                       name="searchString"
+                       value="@ViewData["CurrentFilter"]"
+                       class="form-control"
+                       placeholder="Search by title..." />
             </div>
+
             <div class="col-md-6">
-                <label class="form-label fw-bold">Location</label>
-                <input type="text" name="location" value="@ViewData["CurrentLocation"]"
-                       class="form-control" placeholder="Location..." />
+                <label class="form-label">Location</label>
+                <input type="text"
+                       name="location"
+                       value="@ViewData["CurrentLocation"]"
+                       class="form-control"
+                       placeholder="Search by location..." />
             </div>
 
             <div class="col-md-4">
-                <label class="form-label fw-bold">Category</label>
+                <label class="form-label">Category</label>
                 <select name="category" class="form-select">
                     <option value="">All Categories</option>
-                    <option value="Safety">Safety</option>
-                    <option value="Accessibility">Accessibility</option>
-                    <option value="Maintenance">Maintenance</option>
-                    <option value="Safety">Safety</option>
-                    <option value="Facilities">Facilities</option>
-                    <option value="Cleanliness">Cleanliness</option>
-                    <option value="IT/Wi-Fi">IT/Wi-Fi</option>
-                    <option value="Accessibility">Accessibility</option>
-                    <option value="Study Spaces">Study Spaces</option>
-                    <option value="Maintenance">Maintenance</option>
+
+                    @foreach (var category in new[] { "Safety", "Accessibility", "Maintenance", "Facilities", "Cleanliness", "IT/Wi-Fi", "Study Spaces" })
+                    {
+                        if (currentCategory == category)
+                        {
+                            <option value="@category" selected>@category</option>
+                        }
+                        else
+                        {
+                            <option value="@category">@category</option>
+                        }
+                    }
                 </select>
             </div>
+
             <div class="col-md-4">
-                <label class="form-label fw-bold">Status</label>
+                <label class="form-label">Status</label>
                 <select name="status" class="form-select">
                     <option value="">All Statuses</option>
-                    <option value="Open">Open</option>
-                    <option value="Being Investigated">Being Investigated</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="No Action Required">No Action Required</option>
+
+                    @foreach (var status in new[] { "Open", "Being Investigated", "Resolved", "No Action Required" })
+                    {
+                        if (currentStatus == status)
+                        {
+                            <option value="@status" selected>@status</option>
+                        }
+                        else
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    }
                 </select>
             </div>
+
             <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="btn btn-dark w-100 py-2">Apply Filters</button>
+                <button type="submit" class="btn btn-campus w-100">
+                    Apply Filters
+                </button>
             </div>
         </div>
     </form>
 
-    <div class="mb-3">
-        <a asp-action="Create" class="btn btn-primary">Submit New Report</a>
-    </div>
-
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Location</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Reported</th>
-                <th>Upvotes</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var report in Model)
-                {
+    <div class="surface p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
                     <tr>
-                        <td class="fw-bold">@report.Title</td>
-                        <td>@report.Location</td>
-                        <td>@report.Category</td>
-                        <td>@report.Status</td>
-                        <td>@report.Date_Reported.ToString("dd MMM HH:mm")</td>
-                        <td>@report.Upvotes</td>
-                        <td>
-                            <a asp-action="Details" asp-route-id="@report.Id" class="btn btn-sm btn-outline-info">Details</a>
-                        </td>
+                        <th>Title</th>
+                        <th>Location</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Reported</th>
+                        <th>Upvotes</th>
+                        <th class="text-end">Action</th>
                     </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="7" class="text-center text-muted py-5">
-                        <i class="bi bi-search d-block fs-2 mb-2"></i>
-                        No pulses found matching your filters.
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var report in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">@report.Title</td>
+                                <td>@report.Location</td>
+                                <td>@report.Category</td>
+                                <td>
+                                    <span class="badge @GetStatusClass(report.Status)">
+                                        @report.Status
+                                    </span>
+                                </td>
+                                <td>@report.Date_Reported.ToString("dd MMM yyyy HH:mm")</td>
+                                <td class="fw-bold">@report.Upvotes</td>
+                                <td class="text-end">
+                                    <a asp-action="Details"
+                                       asp-route-id="@report.Id"
+                                       class="btn btn-sm btn-outline-info">
+                                        Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <h5 class="mb-2">No reports found</h5>
+                                <p class="mb-3">
+                                    Try changing your filters or submit a new campus issue.
+                                </p>
+
+                                <a asp-action="Create" class="btn btn-campus">
+                                    Submit New Report
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
