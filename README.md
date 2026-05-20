@@ -56,7 +56,7 @@ CampusPulse supports email notifications for the following events:
 - An investigation entry is added or updated: the original reporter is notified.
 
 For security reasons, SMTP credentials are not stored in `appsettings.json` or committed to GitHub.  
-During development/testing, Mailtrap can be configured using .NET User Secrets.
+Mailtrap can be configured using .NET User Secrets.
 
 From the `CampusPulse` project folder, run:
 
